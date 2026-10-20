@@ -1,0 +1,269 @@
+{
+  "app": {
+    "name": "CocoPalm Sale Dashboard",
+    "tagline": "Theo dõi doanh thu booking, room night và giá phòng trung bình theo kênh OTA mỗi ngày",
+    "domain": "chung",
+    "user": {
+      "name": "Bạn",
+      "first": "bạn"
+    }
+  },
+  "source": {
+    "type": "sheets",
+    "sheet": "Sale2",
+    "title": "Sale report CocoPalm"
+  },
+  "columns": [
+    {
+      "name": "status",
+      "label": "Trạng thái",
+      "type": "text",
+      "role": "SECONDARY_DIM"
+    },
+    {
+      "name": "unique_id",
+      "label": "Mã booking",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "room_type_name",
+      "label": "Loại phòng",
+      "type": "text",
+      "role": "SECONDARY_DIM"
+    },
+    {
+      "name": "rate_plan_name",
+      "label": "Rate plan",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "checkin_date",
+      "label": "Ngày check-in",
+      "type": "date",
+      "role": "IGNORE"
+    },
+    {
+      "name": "checkout_date",
+      "label": "Ngày check-out",
+      "type": "date",
+      "role": "IGNORE"
+    },
+    {
+      "name": "customer_first_name",
+      "label": "Customer first name",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "customer_last_name",
+      "label": "Customer last name",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "room_amount",
+      "label": "Số phòng",
+      "type": "number",
+      "role": "METRIC",
+      "format": "int"
+    },
+    {
+      "name": "ota_source",
+      "label": "Kênh OTA",
+      "type": "text",
+      "role": "PRIMARY_DIM"
+    },
+    {
+      "name": "ota_res_id",
+      "label": "Ota res id",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "occupancy",
+      "label": "Số khách",
+      "type": "text",
+      "role": "SECONDARY_DIM"
+    },
+    {
+      "name": "customer_email",
+      "label": "Customer email",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "customer_telephone",
+      "label": "Customer telephone",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "room_total",
+      "label": "Doanh thu phòng",
+      "type": "number",
+      "role": "METRIC",
+      "format": "money"
+    },
+    {
+      "name": "booking_total",
+      "label": "Doanh thu booking",
+      "type": "number",
+      "role": "METRIC",
+      "format": "money"
+    },
+    {
+      "name": "currency",
+      "label": "Currency",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "payment_type",
+      "label": "Payment type",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "payment_method",
+      "label": "Payment method",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "created_date",
+      "label": "Ngày đặt",
+      "type": "date",
+      "role": "DATE"
+    },
+    {
+      "name": "last_modified_date",
+      "label": "Last modified date",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "cancelled_date",
+      "label": "Cancelled date",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "room_night",
+      "label": "Room night",
+      "type": "number",
+      "role": "METRIC",
+      "format": "int"
+    },
+    {
+      "name": "Listing Airbnb",
+      "label": "Listing Airbnb",
+      "type": "text",
+      "role": "IGNORE"
+    }
+  ],
+  "metrics": [
+    {
+      "key": "booking_total",
+      "label": "Doanh thu booking",
+      "col": "booking_total",
+      "format": "money",
+      "better": "higher",
+      "icon": "coins"
+    },
+    {
+      "key": "room_total",
+      "label": "Doanh thu phòng",
+      "col": "room_total",
+      "format": "money",
+      "better": "higher",
+      "icon": "trending-up"
+    },
+    {
+      "key": "room_night",
+      "label": "Room night",
+      "col": "room_night",
+      "format": "int",
+      "better": "higher",
+      "icon": "clock"
+    },
+    {
+      "key": "room_amount",
+      "label": "Số phòng",
+      "col": "room_amount",
+      "format": "int",
+      "better": "higher",
+      "icon": "layout-dashboard"
+    },
+    {
+      "key": "adr",
+      "label": "Giá phòng TB / đêm (ADR)",
+      "num": [
+        "room_total"
+      ],
+      "den": [
+        "room_night"
+      ],
+      "format": "money",
+      "better": "higher",
+      "icon": "gauge"
+    }
+  ],
+  "kpis": [
+    "booking_total",
+    "room_total",
+    "room_night",
+    "room_amount",
+    "adr"
+  ],
+  "params": [
+    "booking_total",
+    "room_total",
+    "room_night",
+    "adr"
+  ],
+  "defaultParam": "booking_total",
+  "donutMetric": "booking_total",
+  "matrixMetrics": [
+    "booking_total",
+    "room_total",
+    "room_night",
+    "room_amount",
+    "adr"
+  ],
+  "tableMetrics": [
+    "booking_total",
+    "room_total",
+    "room_night",
+    "room_amount",
+    "adr"
+  ],
+  "pages": {
+    "primary": "ota_source",
+    "secondary": "room_type_name",
+    "filter": "status",
+    "primaryIcon": "chart-pie",
+    "secondaryIcon": "layout-dashboard"
+  },
+  "thresholds": [
+    {
+      "key": "adr_target",
+      "label": "ADR mục tiêu",
+      "kind": "target",
+      "metric": "adr",
+      "op": ">=",
+      "value": 970000,
+      "rule": "p75",
+      "basis": "phân vị 75 theo từng dòng = 966.144, làm tròn lên"
+    }
+  ],
+  "alerts": {
+    "dim": "room_type_name"
+  },
+  "defaultDays": 30,
+  "export": {
+    "separator": ";",
+    "filename": "cocopalm-sale-dashboard"
+  }
+}

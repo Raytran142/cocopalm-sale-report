@@ -1,0 +1,378 @@
+{
+  "version": 1,
+  "app": {
+    "name": "CocoPalm Sale Dashboard",
+    "tagline": "Theo dõi doanh thu booking, room night và giá phòng trung bình theo kênh OTA mỗi ngày",
+    "domain": "chung",
+    "user": {
+      "name": "Bạn",
+      "first": "bạn"
+    }
+  },
+  "source": {
+    "type": "sheets",
+    "sheet": "Sale2",
+    "title": "Sale report CocoPalm"
+  },
+  "columns": [
+    {
+      "name": "status",
+      "label": "Trạng thái",
+      "type": "text",
+      "role": "SECONDARY_DIM"
+    },
+    {
+      "name": "unique_id",
+      "label": "Mã booking",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "room_type_name",
+      "label": "Loại phòng",
+      "type": "text",
+      "role": "SECONDARY_DIM"
+    },
+    {
+      "name": "rate_plan_name",
+      "label": "Rate plan",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "checkin_date",
+      "label": "Ngày check-in",
+      "type": "date",
+      "role": "IGNORE"
+    },
+    {
+      "name": "checkout_date",
+      "label": "Ngày check-out",
+      "type": "date",
+      "role": "IGNORE"
+    },
+    {
+      "name": "customer_first_name",
+      "label": "Customer first name",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "customer_last_name",
+      "label": "Customer last name",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "room_amount",
+      "label": "Số phòng",
+      "type": "number",
+      "role": "METRIC",
+      "format": "int"
+    },
+    {
+      "name": "ota_source",
+      "label": "Kênh OTA",
+      "type": "text",
+      "role": "PRIMARY_DIM"
+    },
+    {
+      "name": "ota_res_id",
+      "label": "Ota res id",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "occupancy",
+      "label": "Số khách",
+      "type": "text",
+      "role": "SECONDARY_DIM"
+    },
+    {
+      "name": "customer_email",
+      "label": "Customer email",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "customer_telephone",
+      "label": "Customer telephone",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "room_total",
+      "label": "Doanh thu phòng",
+      "type": "number",
+      "role": "METRIC",
+      "format": "money"
+    },
+    {
+      "name": "booking_total",
+      "label": "Doanh thu booking",
+      "type": "number",
+      "role": "METRIC",
+      "format": "money"
+    },
+    {
+      "name": "currency",
+      "label": "Currency",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "payment_type",
+      "label": "Payment type",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "payment_method",
+      "label": "Payment method",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "created_date",
+      "label": "Ngày đặt",
+      "type": "date",
+      "role": "DATE"
+    },
+    {
+      "name": "last_modified_date",
+      "label": "Last modified date",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "cancelled_date",
+      "label": "Cancelled date",
+      "type": "text",
+      "role": "IGNORE"
+    },
+    {
+      "name": "room_night",
+      "label": "Room night",
+      "type": "number",
+      "role": "METRIC",
+      "format": "int"
+    },
+    {
+      "name": "Listing Airbnb",
+      "label": "Listing Airbnb",
+      "type": "text",
+      "role": "IGNORE"
+    }
+  ],
+  "metrics": [
+    {
+      "key": "booking_total",
+      "label": "Doanh thu booking",
+      "col": "booking_total",
+      "format": "money",
+      "better": "higher",
+      "icon": "coins"
+    },
+    {
+      "key": "room_total",
+      "label": "Doanh thu phòng",
+      "col": "room_total",
+      "format": "money",
+      "better": "higher",
+      "icon": "trending-up"
+    },
+    {
+      "key": "room_night",
+      "label": "Room night",
+      "col": "room_night",
+      "format": "int",
+      "better": "higher",
+      "icon": "clock"
+    },
+    {
+      "key": "room_amount",
+      "label": "Số phòng",
+      "col": "room_amount",
+      "format": "int",
+      "better": "higher",
+      "icon": "layout-dashboard"
+    },
+    {
+      "key": "adr",
+      "label": "Giá phòng TB / đêm (ADR)",
+      "num": [
+        "room_total"
+      ],
+      "den": [
+        "room_night"
+      ],
+      "format": "money",
+      "better": "higher",
+      "icon": "gauge"
+    }
+  ],
+  "kpis": [
+    "booking_total",
+    "room_total",
+    "room_night",
+    "room_amount",
+    "adr"
+  ],
+  "params": [
+    "booking_total",
+    "room_total",
+    "room_night",
+    "adr"
+  ],
+  "defaultParam": "booking_total",
+  "donutMetric": "booking_total",
+  "matrixMetrics": [
+    "booking_total",
+    "room_total",
+    "room_night",
+    "room_amount",
+    "adr"
+  ],
+  "tableMetrics": [
+    "booking_total",
+    "room_total",
+    "room_night",
+    "room_amount",
+    "adr"
+  ],
+  "pages": {
+    "primary": "ota_source",
+    "secondary": "room_type_name",
+    "filter": "status",
+    "primaryIcon": "chart-pie",
+    "secondaryIcon": "layout-dashboard"
+  },
+  "thresholds": [
+    {
+      "key": "adr_target",
+      "label": "ADR mục tiêu",
+      "kind": "target",
+      "metric": "adr",
+      "op": ">=",
+      "value": 970000,
+      "rule": "p75",
+      "basis": "phân vị 75 theo từng dòng = 966.144, làm tròn lên"
+    }
+  ],
+  "alerts": {
+    "dim": "room_type_name"
+  },
+  "defaultDays": 30,
+  "export": {
+    "separator": ";",
+    "filename": "cocopalm-sale-dashboard"
+  },
+  "design": {
+    "system": "monochrome"
+  },
+  "spec": {
+    "goal": "Dashboard này giúp người phụ trách bán phòng thấy doanh thu booking, room night và giá phòng trung bình theo kênh OTA và loại phòng mỗi ngày, để quyết định kênh và loại phòng nào cần đẩy bán hoặc điều chỉnh giá.",
+    "users": [
+      {
+        "group": "Người phụ trách bán phòng",
+        "when": "Đầu tuần và khi cần điều chỉnh giá hoặc phân bổ phòng cho kênh",
+        "decides": "Kênh OTA và loại phòng nào cần ưu tiên, giá phòng có cần điều chỉnh"
+      }
+    ],
+    "questions": [
+      "Kênh OTA nào mang về nhiều doanh thu booking nhất trong 30 ngày gần nhất?",
+      "Doanh thu booking và room night đang đi lên hay đi xuống so với 30 ngày trước đó?",
+      "Loại phòng nào có giá phòng trung bình / đêm (ADR) dưới mục tiêu?"
+    ],
+    "notAnswered": [
+      "Công suất phòng (occupancy rate) và RevPAR: dữ liệu không có tổng số phòng sẵn có mỗi đêm.",
+      "Vì sao booking bị huỷ? Dữ liệu chỉ ghi trạng thái, không có lý do huỷ.",
+      "Kỳ tới sẽ ra sao? Dashboard mô tả cái đã xảy ra, không dự báo."
+    ],
+    "notes": [
+      "Ngày trên dashboard là ngày đặt (created_date), không phải ngày check-in.",
+      "Tổng mặc định gồm cả booking trạng thái cancelled và modified; dùng bộ lọc Trạng thái để chỉ xem booking new.",
+      "Sheet có 2.268 dòng nhưng chỉ 1.938 mã booking (unique_id): một booking có thể xuất hiện nhiều dòng (bản new / modified / cancelled), cộng dồn có thể bị tính trùng."
+    ],
+    "later": [
+      "Đăng nhập bằng Google và giới hạn người được xem.",
+      "Đưa lên Internet để cả đội mở bằng trình duyệt.",
+      "Khử trùng lặp theo unique_id (giữ bản ghi mới nhất) trước khi cộng số liệu."
+    ]
+  },
+  "assumptions": [
+    {
+      "level": "Cao",
+      "doc": "spec",
+      "decision": "DATE = created_date (ngày đặt, 2025-10-01 → 2026-10-16) thay vì checkin_date (2025-10-03 → 2027-08-20).",
+      "why": "Đây là dashboard bán hàng: số bán ghi theo ngày đặt. checkin_date kéo dài 10 tháng vào tương lai và có 214/687 ngày trống, nên cửa sổ 30 ngày gần nhất sẽ gần như rỗng.",
+      "fix": "dashboard.json › columns (role DATE của created_date / checkin_date)"
+    },
+    {
+      "level": "Cao",
+      "doc": "spec",
+      "decision": "PRIMARY_DIM = ota_source (5 kênh) thay vì status (3 giá trị: new · cancelled · modified); status chuyển thành bộ lọc (pages.filter).",
+      "why": "Trục chính cần 3–8 nhóm có ý nghĩa kinh doanh; status là trạng thái bản ghi, không phải trục bán hàng, và cộng tổng theo status trộn booking huỷ với booking thật.",
+      "fix": "dashboard.json › pages.primary, pages.filter, columns (role)"
+    },
+    {
+      "level": "Cao",
+      "doc": "spec",
+      "decision": "Thêm KPI thứ 5 adr = SUM(room_total) / SUM(room_night), format money; trang 3 theo room_type_name (3 loại phòng); payment_type chuyển IGNORE.",
+      "why": "Bản nháp chỉ có 4 METRIC nên thiếu KPI thứ 5; ADR là chỉ số hiệu quả giá chuẩn của khách sạn và dùng được đủ cột. payment_type chỉ có N/A · ota, không phân tích được.",
+      "fix": "dashboard.json › metrics, kpis, pages.secondary"
+    },
+    {
+      "level": "Cao",
+      "doc": "spec",
+      "decision": "Ngưỡng duy nhất: adr_target = phân vị 75 của ADR (kind target). Không có ngưỡng loss, unit_cost, resource.",
+      "why": "Dữ liệu không có cột chi phí, công suất phòng hay chỉ tiêu nên không suy được ngưỡng lỗ / chi phí đơn vị / cạn nguồn lực; các KPI còn lại giữ màu trung tính, sparkline lấy trung bình kỳ làm đường chuẩn.",
+      "fix": "dashboard.json › thresholds"
+    },
+    {
+      "level": "Cao",
+      "doc": "spec",
+      "decision": "room_amount đổi format money → int, nhãn 'Số phòng'; room_total, booking_total đổi int → money (VND).",
+      "why": "room_amount có trung vị 1, max 8 (số phòng mỗi booking); hai cột doanh thu có trung vị 1.916.460 và 2.090.000 VND.",
+      "fix": "dashboard.json › columns, metrics (format)"
+    }
+  ],
+  "reference": {
+    "count": 2268,
+    "from": "2025-10-01",
+    "to": "2026-10-16",
+    "days": 381,
+    "defaultPeriod": {
+      "from": "2026-09-17",
+      "to": "2026-10-16",
+      "rows": 143
+    },
+    "groups": {
+      "ota_source": 5,
+      "room_type_name": 3
+    },
+    "kpisDefault": {
+      "booking_total": 652541211,
+      "room_total": 428219727,
+      "room_night": 483,
+      "room_amount": 215,
+      "adr": 886583.2857142857
+    },
+    "kpisAll": {
+      "booking_total": 7658471037,
+      "room_total": 6169293833,
+      "room_night": 7448,
+      "room_amount": 3206,
+      "adr": 828315.4985230934
+    }
+  },
+  "_render": {
+    "at": "2026-10-20 09:30",
+    "files": {
+      "docs/1-spec/specification.md": "d5b8c1d5d9976ceb3688729d8e4fee91aaae76ac",
+      "docs/2-design/design.md": "ab70c380ad41c04fe4d638b0b798772132904bb2",
+      "docs/2-design/layout.md": "fa85cb970e3eef1c7ccad3f7f1c3bd6ea30126ee",
+      "docs/2-design/components.md": "4030da06ea58a2d1234c4d54959c84b11deaf88b"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "autoVerify": false,
+  "configurations": [
+    {
+      "name": "dashboard",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        ".claude/skills/dashboard-build/scripts/dev.mjs",
+        "--port",
+        "3000"
+      ],
+      "port": 3000
+    }
+  ]
+}
