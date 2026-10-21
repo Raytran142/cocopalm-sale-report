@@ -112,7 +112,13 @@
       "label": "Doanh thu phòng",
       "type": "number",
       "role": "METRIC",
-      "format": "money"
+      "format": "money",
+      "zeroWhen": {
+        "column": "status",
+        "values": [
+          "cancelled"
+        ]
+      }
     },
     {
       "name": "booking_total",
@@ -163,7 +169,13 @@
       "label": "Room night",
       "type": "number",
       "role": "METRIC",
-      "format": "int"
+      "format": "int",
+      "zeroWhen": {
+        "column": "status",
+        "values": [
+          "cancelled"
+        ]
+      }
     },
     {
       "name": "Listing Airbnb",
@@ -300,7 +312,7 @@
     "notes": [
       "Ngày trên dashboard là ngày đặt (created_date), không phải ngày check-in.",
       "Tổng mặc định gồm cả booking trạng thái cancelled và modified; dùng bộ lọc Trạng thái để chỉ xem booking new.",
-      "Mỗi dòng của sheet là một phòng của booking; booking nhiều phòng có nhiều dòng cùng unique_id. Doanh thu booking chỉ tính một lần cho mỗi booking; Số booking đếm unique_id. Booking huỷ có booking_total = 0 nhưng vẫn giữ room_total, nên Doanh thu phòng và ADR gồm cả booking huỷ trừ khi lọc Trạng thái."
+      "Mỗi dòng của sheet là một phòng của booking; booking nhiều phòng có nhiều dòng cùng unique_id. Doanh thu booking chỉ tính một lần cho mỗi booking; Số booking đếm unique_id. Booking huỷ (status = cancelled) không tính vào Doanh thu booking, Doanh thu phòng, Room night và ADR; Số booking vẫn đếm cả booking huỷ (lọc Trạng thái để bỏ)."
     ],
     "later": [
       "Đăng nhập bằng Google và giới hạn người được xem.",
@@ -356,6 +368,13 @@
       "decision": "booking_total chỉ tính một lần cho mỗi unique_id (dòng đầu của booking), các dòng phòng sau = 0 (onePerEntity: unique_id).",
       "why": "booking_total lặp nguyên giá trị trên mọi dòng của booking nhiều phòng (222 booking), cộng theo dòng làm Doanh thu booking bị đếm trùng ~2,12 tỷ.",
       "fix": "dashboard.json › columns[booking_total].onePerEntity"
+    },
+    {
+      "level": "Cao",
+      "doc": "spec",
+      "decision": "room_total và room_night tính là 0 ở booking status = cancelled (zeroWhen); Doanh thu phòng, Room night và ADR không còn gồm booking huỷ.",
+      "why": "Booking huỷ có booking_total = 0 nhưng vẫn giữ room_total (147 booking, 556 tr) và room_night; giữ lại làm Doanh thu phòng cao hơn Doanh thu booking và làm lệch ADR.",
+      "fix": "dashboard.json › columns[room_total|room_night].zeroWhen"
     }
   ],
   "reference": {
@@ -374,17 +393,17 @@
     },
     "kpisDefault": {
       "booking_total": 429673227,
-      "room_total": 428219727,
-      "room_night": 483,
+      "room_total": 429673227,
+      "room_night": 485,
       "booking_count": 122,
-      "adr": 886583.2857142857
+      "adr": 885924.1793814433
     },
     "kpisAll": {
       "booking_total": 5538687278,
-      "room_total": 6169293833,
-      "room_night": 7448,
+      "room_total": 5614373598,
+      "room_night": 6633,
       "booking_count": 1939,
-      "adr": 828315.4985230934
+      "adr": 846430.513794663
     }
   },
   "_render": {

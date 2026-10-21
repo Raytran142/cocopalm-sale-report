@@ -111,7 +111,13 @@
       "label": "Doanh thu phòng",
       "type": "number",
       "role": "METRIC",
-      "format": "money"
+      "format": "money",
+      "zeroWhen": {
+        "column": "status",
+        "values": [
+          "cancelled"
+        ]
+      }
     },
     {
       "name": "booking_total",
@@ -162,7 +168,13 @@
       "label": "Room night",
       "type": "number",
       "role": "METRIC",
-      "format": "int"
+      "format": "int",
+      "zeroWhen": {
+        "column": "status",
+        "values": [
+          "cancelled"
+        ]
+      }
     },
     {
       "name": "Listing Airbnb",

@@ -168,7 +168,11 @@ export function toNum(v: unknown): number | null {
 export function toRows(values: unknown[][]): { rows: Row[]; skipped: number; badDates: number; badNumbers: number; header: string[] } {
   const header = (values[0] ?? []).map((v) => String(v ?? '').trim());
   const idx = new Map(header.map((h, i) => [h.toLowerCase(), i]));
-  const missing = COLUMNS.flatMap((c) => [c.countDistinct ?? c.name, ...(c.onePerEntity ? [c.onePerEntity] : [])])
+  const missing = COLUMNS.flatMap((c) => [
+    c.countDistinct ?? c.name,
+    ...(c.onePerEntity ? [c.onePerEntity] : []),
+    ...(c.zeroWhen ? [c.zeroWhen.column] : []),
+  ])
     .filter((n) => !idx.has(n.toLowerCase()));
   if (!header.length) throw new SourceError('Sheet rỗng.', `Tab "${CFG.source.sheet}" chưa có dữ liệu, hoặc sai tên tab.`);
   if (missing.length) {
@@ -196,6 +200,7 @@ export function toRows(values: unknown[][]): { rows: Row[]; skipped: number; bad
         const n = toNum(at(raw, c.name));
         if (n === null) badNumbers++;
         m[c.name] = n ?? 0;
+        if (c.zeroWhen && c.zeroWhen.values.includes(String(at(raw, c.zeroWhen.column) ?? '').trim())) m[c.name] = 0;
         if (c.onePerEntity) {
           const k = String(at(raw, c.onePerEntity) ?? '').trim();
           let s = seen.get(c.name);

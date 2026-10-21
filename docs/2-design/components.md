@@ -21,8 +21,8 @@ Băng 118px, 5 thẻ. Mỗi thẻ: nhãn + icon · số lớn · so kỳ trướ
 | # | Thẻ | Số lớn | Chân thẻ | Màu |
 |---|---|---|---|---|
 | 1 | Doanh thu booking | `SUM(booking_total)`, mỗi `unique_id` một lần | so với … kỳ trước | giữ mực |
-| 2 | Doanh thu phòng | `SUM(room_total)` | so với … kỳ trước | giữ mực |
-| 3 | Room night | `SUM(room_night)` | so với … kỳ trước | giữ mực |
+| 2 | Doanh thu phòng | `SUM(room_total)`, bỏ booking huỷ | so với … kỳ trước | giữ mực |
+| 3 | Room night | `SUM(room_night)`, bỏ booking huỷ | so với … kỳ trước | giữ mực |
 | 4 | Số booking | `COUNT DISTINCT(unique_id)` | so với … kỳ trước | giữ mực |
 | 5 | Giá phòng TB / đêm (ADR) | `SUM(room_total) / SUM(room_night)` | mục tiêu 970k · đang thiếu … | xanh khi ≥ 970k, còn lại đỏ |
 

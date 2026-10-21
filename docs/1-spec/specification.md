@@ -36,8 +36,8 @@ Cấu trúc bốn trang là cố định. Chỉ dimension của trang 2 và tran
 | # | Nhãn | Công thức | Chiều tốt | Đường chuẩn sparkline | Tô màu |
 |---|---|---|---|---|---|
 | 1 | Doanh thu booking | `SUM(booking_total)`, mỗi `unique_id` một lần | cao hơn tốt hơn | trung bình kỳ | không |
-| 2 | Doanh thu phòng | `SUM(room_total)` | cao hơn tốt hơn | trung bình kỳ | không |
-| 3 | Room night | `SUM(room_night)` | cao hơn tốt hơn | trung bình kỳ | không |
+| 2 | Doanh thu phòng | `SUM(room_total)`, bỏ booking huỷ | cao hơn tốt hơn | trung bình kỳ | không |
+| 3 | Room night | `SUM(room_night)`, bỏ booking huỷ | cao hơn tốt hơn | trung bình kỳ | không |
 | 4 | Số booking | `COUNT DISTINCT(unique_id)` (cột suy ra `booking_count`) | cao hơn tốt hơn | trung bình kỳ | không |
 | 5 | Giá phòng TB / đêm (ADR) | `SUM(room_total) / SUM(room_night)` | cao hơn tốt hơn | mục tiêu 970.000 | có |
 
@@ -98,7 +98,7 @@ Tỷ lệ luôn tính lại từ tổng: `SUM(tử) / SUM(mẫu)`. Lấy trung b
 
 | Chỉ số | Công thức đúng | Đúng (toàn kỳ) | Sai: trung bình từng dòng |
 |---|---|---|---|
-| Giá phòng TB / đêm (ADR) | `SUM(room_total) / SUM(room_night)` | 828.315 | 808.645 |
+| Giá phòng TB / đêm (ADR) | `SUM(room_total) / SUM(room_night)` | 846.431 | 819.122 |
 
 ## 9 · Ngưỡng nghiệp vụ
 
@@ -131,10 +131,10 @@ Sau khi build, dashboard phải hiện đúng các số này. Lệch là sai ở
 | Khoảng ngày | 2026-09-17 → 2026-10-16 | 2025-10-01 → 2026-10-16 |
 | Số dòng | 143 | 2.268 |
 | Doanh thu booking | 429.673.227 | 5.538.687.278 |
-| Doanh thu phòng | 428.219.727 | 6.169.293.833 |
-| Room night | 483 | 7.448 |
+| Doanh thu phòng | 429.673.227 | 5.614.373.598 |
+| Room night | 485 | 6.633 |
 | Số booking | 122 | 1.939 |
-| Giá phòng TB / đêm (ADR) | 886.583 | 828.315 |
+| Giá phòng TB / đêm (ADR) | 885.924 | 846.431 |
 
 Số nhóm: Kênh OTA 5 · Loại phòng 3.
 
@@ -142,7 +142,7 @@ Số nhóm: Kênh OTA 5 · Loại phòng 3.
 
 - Ngày trên dashboard là ngày đặt (created_date), không phải ngày check-in.
 - Tổng mặc định gồm cả booking trạng thái cancelled và modified; dùng bộ lọc Trạng thái để chỉ xem booking new.
-- Mỗi dòng của sheet là một phòng của booking; booking nhiều phòng có nhiều dòng cùng unique_id. Doanh thu booking chỉ tính một lần cho mỗi booking; Số booking đếm unique_id. Booking huỷ có booking_total = 0 nhưng vẫn giữ room_total, nên Doanh thu phòng và ADR gồm cả booking huỷ trừ khi lọc Trạng thái.
+- Mỗi dòng của sheet là một phòng của booking; booking nhiều phòng có nhiều dòng cùng unique_id. Doanh thu booking chỉ tính một lần cho mỗi booking; Số booking đếm unique_id. Booking huỷ (status = cancelled) không tính vào Doanh thu booking, Doanh thu phòng, Room night và ADR; Số booking vẫn đếm cả booking huỷ (lọc Trạng thái để bỏ).
 
 ## 13 · Dashboard này KHÔNG trả lời được gì
 
@@ -206,7 +206,7 @@ Dashboard theo dõi cho biết *cái gì đang xảy ra*, không cho biết *vì
   Vì: Quá nhiều hoặc quá ít giá trị khác nhau để làm nhóm (giống mã hoặc mô tả).  
   Nếu sai: dashboard.json › columns[Listing Airbnb].role.
 - **G18 · Cao** — ADR mục tiêu: Giá phòng TB / đêm (ADR) ≥ 970.000.  
-  Vì: Suy từ dữ liệu (phân vị 75 theo từng dòng = 966.144, làm tròn lên): mô tả hiện trạng, chưa phải mục tiêu kinh doanh. Giá phòng TB / đêm (ADR) toàn kỳ hiện là 828.315.  
+  Vì: Suy từ dữ liệu (phân vị 75 theo từng dòng = 966.144, làm tròn lên): mô tả hiện trạng, chưa phải mục tiêu kinh doanh. Giá phòng TB / đêm (ADR) toàn kỳ hiện là 846.431 (đã bỏ booking huỷ).  
   Nếu sai: dashboard.json › thresholds[adr_target].value.
 - **G19 · Cao** — Chỉ có 1/4 ngưỡng.  
   Vì: Thiếu cột để tính các ngưỡng còn lại. KPI không có ngưỡng thì giữ mực, sparkline lấy trung bình kỳ làm đường chuẩn.  
@@ -244,3 +244,6 @@ Dashboard theo dõi cho biết *cái gì đang xảy ra*, không cho biết *vì
 - **G30 · Cao** — (2026-10-21, sửa tay) Doanh thu booking chỉ tính `booking_total` ở dòng đầu của mỗi `unique_id`, các dòng phòng sau = 0 (`onePerEntity: "unique_id"`).  
   Vì: `booking_total` lặp nguyên giá trị trên mọi dòng của 222 booking nhiều phòng; cộng theo dòng làm tổng bị đếm trùng 2.121.237.259 (7,72 tỷ → 5,60 tỷ). Số tham chiếu §11 đã tính lại. Lọc theo loại phòng thì doanh thu của booking nhiều loại phòng nằm ở loại phòng của dòng đầu.  
   Nếu sai: dashboard.json › columns[booking_total].onePerEntity
+- **G31 · Cao** — (2026-10-21, sửa tay) `room_total` và `room_night` tính là 0 ở booking `status = cancelled` (`zeroWhen`). Doanh thu phòng, Room night và ADR không còn gồm booking huỷ; Số booking vẫn đếm cả booking huỷ.  
+  Vì: Booking huỷ có `booking_total = 0` nhưng vẫn giữ `room_total` (147 booking, 556 tr) và room night; giữ lại làm Doanh thu phòng cao hơn Doanh thu booking và làm lệch ADR. Bỏ cả room night để tử số và mẫu số của ADR cùng phạm vi. Số tham chiếu §11 đã tính lại; ngưỡng ADR 970.000 giữ nguyên.  
+  Nếu sai: dashboard.json › columns[room_total|room_night].zeroWhen

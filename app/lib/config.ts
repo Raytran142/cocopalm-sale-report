@@ -23,6 +23,9 @@ export type Column = {
   /* Cột số lặp NGUYÊN giá trị trên mọi dòng của một thực thể (vd. booking_total trên mỗi dòng phòng của
      một booking): chỉ giữ giá trị ở dòng đầu của mỗi giá trị khác nhau của cột này, các dòng sau = 0. */
   onePerEntity?: string;
+  /* Cột số tính là 0 ở dòng mà cột `column` có một trong các giá trị `values`
+     (vd. room_total, room_night của booking đã huỷ). */
+  zeroWhen?: { column: string; values: string[] };
 };
 
 export type Metric = {

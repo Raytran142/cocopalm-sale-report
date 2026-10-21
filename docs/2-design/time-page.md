@@ -22,7 +22,7 @@ Thấy doanh thu thay đổi qua các tháng và so sánh với tháng trước 
 | Không có kỳ so sánh | Hiện "—" / "chưa có dữ liệu", không hiện 0% hay +∞ |
 | Tháng chưa trọn | Tháng cuối của dữ liệu, nếu chưa tới ngày cuối tháng, đánh dấu `*`. MoM và YoY so với **cùng số ngày** (ngày 1..N) của tháng so sánh, ví dụ T10/26 (tới ngày 19) so với 1–19/10/25 |
 | Tháng mặc định | Tháng trọn gần nhất |
-| Tỷ lệ (ADR) | SUM(room_total) / SUM(room_night) của tháng, như luật chung của app |
+| Tỷ lệ (ADR) | SUM(room_total) / SUM(room_night) của tháng, bỏ booking huỷ, như luật chung của app |
 
 Giới hạn hiện tại: dữ liệu bắt đầu từ 10/2025 nên YoY chỉ có cho tháng 10/2026. Các tháng khác tự có YoY khi dữ liệu đủ 13 tháng.
 

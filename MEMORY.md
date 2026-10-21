@@ -16,4 +16,4 @@
 - "Số booking" = số `unique_id` khác nhau, qua cột suy ra `booking_count` (`countDistinct: "unique_id"` trong dashboard.json; tính ở `app/lib/data-source.ts`). `room_amount` chuyển IGNORE.
 - Tài liệu skill sinh (spec/design/layout/components) đã sửa tay vì script render của skill không còn trên máy; ghi là G29.
 - `booking_total` lặp nguyên giá trị trên mọi dòng của booking nhiều phòng (222 booking) ⇒ đã sửa: chỉ giữ ở dòng đầu (`onePerEntity: "unique_id"`), tổng 7,72 tỷ → 5,60 tỷ (G30).
-- Chưa xử lý: booking huỷ có booking_total = 0 nhưng vẫn giữ room_total (556 tr), nên Doanh thu phòng và ADR gồm cả booking huỷ khi không lọc Trạng thái.
+- Booking huỷ giữ room_total (556 tr) và room night dù booking_total = 0 ⇒ đã sửa: `zeroWhen: status = cancelled` cho room_total, room_night (G31). Số booking vẫn đếm cả booking huỷ.
