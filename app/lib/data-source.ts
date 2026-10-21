@@ -6,6 +6,7 @@ import 'server-only';
 import { createSign } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { thresholdTargets } from './aggregate';
 import { CFG, COLUMNS, DATE_COL } from './config';
 import { DAY, isoToUtc, utcToIso } from './format';
 import type { Meta, Row } from './types';
@@ -64,11 +65,11 @@ function sheetHint(status: number, msg: string): string {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? 'email service account';
   if (status === 403) return `Mở Google Sheet → Share → thêm ${email} quyền Viewer.`;
   if (status === 404) return 'GOOGLE_SHEETS_SPREADSHEET_ID sai: lấy đoạn giữa /d/ và /edit trong link Sheet.';
-  if (/parse range/i.test(msg)) return `Không thấy tab "${CFG.source.sheet}". Sửa source.sheet trong docs/1-spec/dashboard.json cho đúng tên tab rồi chạy lại scaffold.`;
+  if (/parse range/i.test(msg)) return 'Không đọc được tab: có thể tab vừa bị đổi tên hoặc xoá. Bấm Tải lại để lấy lại danh sách property.';
   return 'Kiểm tra kết nối mạng và ba biến trong app/.env.local.';
 }
 
-async function readSheet(): Promise<unknown[][]> {
+async function sheetGet<T>(pathAndQuery: string): Promise<T> {
   const missing = ENV_NAMES.filter((n) => !process.env[n]?.trim());
   if (missing.length) {
     throw new SourceError(`Thiếu biến môi trường: ${missing.join(', ')}`, 'Mở app/.env.local, điền đủ ba biến, rồi tắt và chạy lại npm run dev.');
@@ -77,18 +78,44 @@ async function readSheet(): Promise<unknown[][]> {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!.trim();
   const key = process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, '\n');
   const token = await accessToken(email, key);
-  const tab = CFG.source.sheet ? `'${CFG.source.sheet.replace(/'/g, "''")}'` : 'A:ZZ';
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(id)}/values/${encodeURIComponent(tab)}` +
-    // Số trả về dạng số (không bị định dạng 1.234,5); ô ngày trả về chuỗi theo định dạng của ô.
-    '?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING';
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(id)}${pathAndQuery}`;
   const res = await fetch(url, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store' });
   if (!res.ok) {
     const j = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
     const msg = j.error?.message ?? `HTTP ${res.status}`;
     throw new SourceError(`Google Sheets: ${msg}`, sheetHint(res.status, msg));
   }
-  const j = (await res.json()) as { values?: unknown[][] };
+  return (await res.json()) as T;
+}
+
+const a1 = (tab: string, range = ''): string => encodeURIComponent(`'${tab.replace(/'/g, "''")}'${range}`);
+
+async function readSheet(tab: string): Promise<unknown[][]> {
+  // Số trả về dạng số (không bị định dạng 1.234,5); ô ngày trả về chuỗi theo định dạng của ô.
+  const j = await sheetGet<{ values?: unknown[][] }>(
+    `/values/${a1(tab)}?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`);
   return j.values ?? [];
+}
+
+/* Cột mà một tab phải có (kể cả cột nguồn của cột suy ra). */
+const REQUIRED = [...new Set(COLUMNS.flatMap((c) => [
+  c.countDistinct ?? c.name,
+  ...(c.onePerEntity ? [c.onePerEntity] : []),
+  ...(c.zeroWhen ? [c.zeroWhen.column] : []),
+]))];
+
+/* Property = mọi tab có hàng tiêu đề chứa đủ REQUIRED; tên property = tên tab.
+   Thêm property mới chỉ cần thêm một tab cùng bộ cột. */
+async function listProperties(): Promise<string[]> {
+  const meta = await sheetGet<{ sheets?: { properties: { title: string } }[] }>('?fields=sheets.properties.title');
+  const tabs = (meta.sheets ?? []).map((s) => s.properties.title);
+  if (!tabs.length) return [];
+  const heads = await sheetGet<{ valueRanges?: { values?: unknown[][] }[] }>(
+    '/values:batchGet?' + tabs.map((t) => `ranges=${a1(t, '!1:1')}`).join('&'));
+  return tabs.filter((_, i) => {
+    const h = new Set((heads.valueRanges?.[i]?.values?.[0] ?? []).map((v) => String(v ?? '').trim().toLowerCase()));
+    return REQUIRED.every((n) => h.has(n.toLowerCase()));
+  });
 }
 
 /* ── CSV (chỉ dùng khi chạy trên máy) ───────────────────────────────────── */
@@ -168,12 +195,7 @@ export function toNum(v: unknown): number | null {
 export function toRows(values: unknown[][]): { rows: Row[]; skipped: number; badDates: number; badNumbers: number; header: string[] } {
   const header = (values[0] ?? []).map((v) => String(v ?? '').trim());
   const idx = new Map(header.map((h, i) => [h.toLowerCase(), i]));
-  const missing = COLUMNS.flatMap((c) => [
-    c.countDistinct ?? c.name,
-    ...(c.onePerEntity ? [c.onePerEntity] : []),
-    ...(c.zeroWhen ? [c.zeroWhen.column] : []),
-  ])
-    .filter((n) => !idx.has(n.toLowerCase()));
+  const missing = REQUIRED.filter((n) => !idx.has(n.toLowerCase()));
   if (!header.length) throw new SourceError('Sheet rỗng.', `Tab "${CFG.source.sheet}" chưa có dữ liệu, hoặc sai tên tab.`);
   if (missing.length) {
     throw new SourceError(`Thiếu cột: ${missing.join(', ')}`, `Hàng đầu của tab phải có đúng tên cột như dashboard.json. Đang có: ${header.join(', ')}`);
@@ -222,16 +244,34 @@ export function toRows(values: unknown[][]): { rows: Row[]; skipped: number; bad
   return { rows, skipped, badDates, badNumbers, header };
 }
 
-export async function loadData(): Promise<{ rows: Row[]; meta: Meta }> {
-  const values = CFG.source.type === 'csv' ? await readCsv() : await readSheet();
+/* property: tên tab muốn xem. Không có / không hợp lệ ⇒ source.sheet nếu còn là property, không thì tab đầu tiên. */
+export async function loadData(property?: string | null): Promise<{ rows: Row[]; meta: Meta }> {
+  let properties: string[], tab: string, values: unknown[][];
+  if (CFG.source.type === 'csv') {
+    tab = path.basename(CFG.source.csv ?? '');
+    properties = [tab];
+    values = await readCsv();
+  } else {
+    properties = await listProperties();
+    if (!properties.length) {
+      throw new SourceError('Không có tab nào đủ cột để làm property.',
+        `Mỗi property là một tab có hàng tiêu đề gồm: ${REQUIRED.join(', ')}.`);
+    }
+    tab = property && properties.includes(property) ? property
+      : CFG.source.sheet && properties.includes(CFG.source.sheet) ? CFG.source.sheet : properties[0];
+    values = await readSheet(tab);
+  }
   const { rows, skipped, badDates, badNumbers, header } = toRows(values);
-  if (!rows.length) throw new SourceError('Đọc được tab nhưng không có dòng dữ liệu nào.', 'Kiểm tra tab có dữ liệu bên dưới hàng tiêu đề, và cột ngày đúng định dạng yyyy-mm-dd.');
+  if (!rows.length) throw new SourceError(`Tab "${tab}" không có dòng dữ liệu nào.`, 'Kiểm tra tab có dữ liệu bên dưới hàng tiêu đề, và cột ngày đúng định dạng yyyy-mm-dd.');
   const last = rows[rows.length - 1];
   return {
     rows,
     meta: {
+      property: tab,
+      properties,
+      targets: thresholdTargets(rows, tab),
       source: CFG.source.type,
-      sheet: CFG.source.type === 'csv' ? (CFG.source.csv ?? '') : (CFG.source.sheet ?? ''),
+      sheet: tab,
       title: CFG.source.title ?? '',
       count: rows.length,
       skipped, badDates, badNumbers,

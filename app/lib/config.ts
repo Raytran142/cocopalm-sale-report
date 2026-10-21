@@ -49,11 +49,14 @@ export type Threshold = {
   op: Op;
   value: number;
   alert?: string;
+  rule?: string; // p75 · p25 · median_x1.25 ⇒ tính lại theo từng property (aggregate.thresholdTargets)
+  byProperty?: Record<string, number>; // con số chốt tay cho từng property, thắng rule
 };
 
 export type DashboardConfig = {
   app: {
     name: string;
+    nameTemplate?: string; // vd. "{property} Sale Dashboard"; không có thì dùng name
     tagline: string;
     domain: string;
     user?: { name: string; first: string; role?: string; email?: string };
@@ -104,6 +107,18 @@ export function isAdditive(key: string): boolean {
   if (!m?.col) return false;
   const c = colOf(m.col);
   return c?.role === 'METRIC' && (c.agg ?? 'sum') === 'sum';
+}
+
+/* Tên dashboard theo property đang xem. */
+export const appName = (property?: string | null): string =>
+  property && CFG.app.nameTemplate ? CFG.app.nameTemplate.replace('{property}', property) : CFG.app.name;
+
+/* Đổi property ⇒ nạp giá trị ngưỡng của property đó vào CFG.thresholds (server tính sẵn ở meta.targets).
+   CFG là cấu hình dùng chung của cả trang; mọi chỗ đọc t.value (KPI, bảng, cảnh báo) thấy ngay số mới
+   ở lần vẽ kế tiếp — page.tsx gọi hàm này TRƯỚC setRows. Ngưỡng không có trong targets giữ số của dashboard.json. */
+const BASE_VALUES = new Map(CFG.thresholds.map((t) => [t.key, t.value]));
+export function applyTargets(targets: Record<string, number>): void {
+  for (const t of CFG.thresholds) t.value = targets[t.key] ?? BASE_VALUES.get(t.key) ?? t.value;
 }
 
 export const LOSS = CFG.thresholds.find((t) => t.kind === 'loss') ?? null;

@@ -9,6 +9,9 @@ export type Row = {
 };
 
 export type Meta = {
+  property: string;       // tab đang xem = tên property
+  properties: string[];   // mọi tab đủ cột
+  targets: Record<string, number>; // giá trị ngưỡng tính riêng cho property này (key của threshold → số)
   source: 'sheets' | 'csv';
   sheet: string;
   title: string;

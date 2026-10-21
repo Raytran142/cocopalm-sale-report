@@ -1,17 +1,18 @@
 {
   "app": {
-    "name": "CocoPalm Sale Dashboard",
-    "tagline": "Theo dõi doanh thu booking, room night và giá phòng trung bình theo kênh OTA mỗi ngày",
+    "name": "Sale Dashboard",
+    "tagline": "Theo dõi doanh thu booking, số booking và giá phòng trung bình theo kênh OTA của từng property mỗi ngày",
     "domain": "chung",
     "user": {
       "name": "Bạn",
       "first": "bạn"
-    }
+    },
+    "nameTemplate": "{property} Sale Dashboard"
   },
   "source": {
     "type": "sheets",
-    "sheet": "Sale2",
-    "title": "Sale report CocoPalm"
+    "sheet": "CocoPalm",
+    "title": "Sale report (nhiều property)"
   },
   "columns": [
     {
@@ -283,7 +284,6 @@
   },
   "defaultDays": 30,
   "export": {
-    "separator": ";",
-    "filename": "cocopalm-sale-dashboard"
+    "separator": ";"
   }
 }

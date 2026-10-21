@@ -12,8 +12,14 @@
 
 ## 2026-10-21 · "Số booking" thay "Số phòng"
 
-- Mỗi dòng của tab Sale2 là **một phòng** của booking: booking nhiều phòng có nhiều dòng cùng `unique_id`, cùng status, cùng created_date (2.283 dòng / 1.953 booking).
+- Mỗi dòng của tab CocoPalm (tên cũ Sale2) là **một phòng** của booking: booking nhiều phòng có nhiều dòng cùng `unique_id`, cùng status, cùng created_date (2.283 dòng / 1.953 booking).
 - "Số booking" = số `unique_id` khác nhau, qua cột suy ra `booking_count` (`countDistinct: "unique_id"` trong dashboard.json; tính ở `app/lib/data-source.ts`). `room_amount` chuyển IGNORE.
 - Tài liệu skill sinh (spec/design/layout/components) đã sửa tay vì script render của skill không còn trên máy; ghi là G29.
 - `booking_total` lặp nguyên giá trị trên mọi dòng của booking nhiều phòng (222 booking) ⇒ đã sửa: chỉ giữ ở dòng đầu (`onePerEntity: "unique_id"`), tổng 7,72 tỷ → 5,60 tỷ (G30).
 - Booking huỷ giữ room_total (556 tr) và room night dù booking_total = 0 ⇒ đã sửa: `zeroWhen: status = cancelled` cho room_total, room_night (G31). Số booking vẫn đếm cả booking huỷ.
+
+## 2026-10-21 · Nhiều property
+
+- Mỗi tab có đủ bộ cột = một property, tên = tên tab (tự nhận, không cấu hình). Xem từng căn, không gộp. Tên dashboard "{property} Sale Dashboard". Mục tiêu ADR tính p75 riêng từng property, chốt tay qua `thresholds[].byProperty`.
+- Tab hiện có: CocoPalm (đổi tên từ Sale2 ngày 2026-10-21), Jade, JM Beach. Tab "tổng quan" không đủ cột nên bị bỏ qua.
+- Chi tiết: `docs/2-design/multi-property.md`.

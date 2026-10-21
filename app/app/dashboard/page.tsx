@@ -1,7 +1,7 @@
 'use client';
 /* Trang dashboard: CHỈ giữ state và bố cục. Toán ở lib/aggregate.ts, hình vẽ ở components/.
    Dữ liệu tải MỘT lần từ /api/data; mọi thao tác lọc chạy trên mảng đã có trong bộ nhớ. */
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { FilterDrawer } from '@/components/FilterDrawer';
 import { ExportModal } from '@/components/ExportModal';
 import { GreetBar, type Chip } from '@/components/GreetBar';
@@ -15,7 +15,7 @@ import { OverviewPage } from '@/components/pages/OverviewPage';
 import { SourcePage } from '@/components/pages/SourcePage';
 import { TimePage } from '@/components/pages/TimePage';
 import { defaultMonth, monthLabel, months } from '@/lib/monthly';
-import { ALERT_DIM, FILTER_DIM, PRIMARY, SECONDARY, labelOf, lower } from '@/lib/config';
+import { ALERT_DIM, FILTER_DIM, PRIMARY, SECONDARY, appName, applyTargets, labelOf, lower } from '@/lib/config';
 import { alertTotal, alerts as alertsOf, applyDims, applyFilters, defaultFilters, filterCount, prevRows, type Alert } from '@/lib/aggregate';
 import { clockOf, ddmm, isoAt, vi } from '@/lib/format';
 import { SIDE_RAIL, SIDE_WIDE, layout } from '@/lib/tokens';
@@ -36,31 +36,54 @@ export default function DashboardPage() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [drawer, setDrawer] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [pop, setPop] = useState<'notif' | 'acct' | null>(null);
+  const [pop, setPop] = useState<'notif' | 'acct' | 'prop' | null>(null);
   const [month, setMonth] = useState<string | null>(null); // tháng đang chọn ở trang "Theo thời gian"; null = mặc định
+  const req = useRef(0); // đổi property liên tục: chỉ nhận phản hồi của lần gọi cuối
+  const want = useRef<string | null>(null); // property của lần gọi cuối (để "Thử lại" gọi đúng property)
 
-  const fetchData = useCallback(async (first: boolean) => {
+  /* first = tải mới (mở trang hoặc đổi property): đặt lại bộ lọc và tháng vì nhóm của property khác nhau.
+     property = tab muốn xem; null ⇒ server chọn mặc định. Property đang xem được nhớ trong localStorage. */
+  const fetchData = useCallback(async (first: boolean, property: string | null) => {
+    const id = ++req.current;
+    want.current = property;
     if (first) setLoad('loading');
     else setSyncing(true);
     try {
-      const res = await fetch('/api/data', { cache: 'no-store' });
+      const q = property ? `?property=${encodeURIComponent(property)}` : '';
+      const res = await fetch('/api/data' + q, { cache: 'no-store' });
       const json = (await res.json()) as DataOk | DataErr;
+      if (id !== req.current) return;
       if ('error' in json) throw json;
+      applyTargets(json.meta.targets ?? {}); // trước setRows: lần vẽ kế tiếp đọc ngưỡng của property mới
       setRows(json.rows);
       setMeta(json.meta);
+      try { localStorage.setItem('property', json.meta.property); } catch { /* chế độ riêng tư: bỏ qua */ }
       // khoảng ngày mặc định tính từ NGÀY CUỐI TRONG DỮ LIỆU, không phải từ hôm nay
-      if (first) setFilters(defaultFilters(json.meta.days));
+      if (first) { setFilters(defaultFilters(json.meta.days)); setMonth(null); }
       setErr(null);
       setLoad('ready');
     } catch (e) {
+      if (id !== req.current) return;
       setErr(e && typeof e === 'object' && 'error' in e ? (e as DataErr) : { error: e instanceof Error ? e.message : 'Không gọi được /api/data' });
       if (first) setLoad('error');
     } finally {
-      setSyncing(false);
+      if (id === req.current) setSyncing(false);
     }
   }, []);
 
-  useEffect(() => { void fetchData(true); }, [fetchData]);
+  useEffect(() => {
+    let saved: string | null = null;
+    try { saved = localStorage.getItem('property'); } catch { /* bỏ qua */ }
+    void fetchData(true, saved);
+  }, [fetchData]);
+
+  useEffect(() => { if (meta) document.title = appName(meta.property); }, [meta]);
+
+  const property = meta?.property ?? null;
+  const switchProperty = (p: string) => {
+    setPop(null);
+    if (p !== property) void fetchData(true, p);
+  };
 
   useEffect(() => {
     if (document.documentElement.dataset.theme === 'dark') setTheme('dark');
@@ -137,7 +160,7 @@ export default function DashboardPage() {
             <b>Không tải được dữ liệu</b>
             {err?.error}
             {err?.hint && <div style={{ marginTop: 6 }}>{err.hint}</div>}
-            <button onClick={() => void fetchData(true)}>Thử lại</button>
+            <button onClick={() => void fetchData(true, want.current)}>Thử lại</button>
           </div>
         </div>
       </div>
@@ -175,10 +198,12 @@ export default function DashboardPage() {
                  shown={filtered.length} total={rows.length}
                  note={meta ? `${vi(items[1].badge ?? 0)} ${lower(labelOf(PRIMARY))} · ${vi(days)} ngày dữ liệu` : '—'}
                  theme={theme} onTheme={toggleTheme} onReset={reset}
-                 acctOpen={pop === 'acct'} onAcct={() => setPop((p) => (p === 'acct' ? null : 'acct'))} />
+                 acctOpen={pop === 'acct'} onAcct={() => setPop((p) => (p === 'acct' ? null : 'acct'))}
+                 property={property} properties={meta?.properties ?? []} onProperty={switchProperty}
+                 propOpen={pop === 'prop'} onPropToggle={() => setPop((p) => (p === 'prop' ? null : 'prop'))} />
         <main id="main">
           <TopBar icon={current.icon} label={current.label}
-                  synced={meta ? clockOf(meta.fetchedAt) : '—'} syncing={syncing} onRefresh={() => void fetchData(false)}
+                  synced={meta ? clockOf(meta.fetchedAt) : '—'} syncing={syncing} onRefresh={() => void fetchData(false, property)}
                   alerts={al} notifOpen={pop === 'notif'} onNotif={() => setPop((p) => (p === 'notif' ? null : 'notif'))} onAlert={onAlert}
                   onExport={() => { setDrawer(false); setPop(null); setExporting(true); }}
                   onDrawer={() => { setExporting(false); setPop(null); setDrawer(true); }}
@@ -192,7 +217,7 @@ export default function DashboardPage() {
         <FilterDrawer open={drawer} filters={filters} rows={rows} days={Math.max(1, days)} from={from}
                       onApply={(f) => { setFilters(f); setDrawer(false); }} onClose={() => setDrawer(false)} />
         <ExportModal open={exporting} filtered={filtered} rows={rows} filters={filters} days={Math.max(1, days)} from={from}
-                     onClose={() => setExporting(false)} />
+                     property={property} onClose={() => setExporting(false)} />
       </Shell>
       <Tip />
     </>

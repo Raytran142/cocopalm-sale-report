@@ -262,6 +262,21 @@ input,select{font:inherit;color:inherit}
             font-size:13.5px;font-weight:600;letter-spacing:-.02em;
             line-height:1.2;overflow:hidden;overflow-wrap:anywhere}
 .brandtxt span{display:none}   /* dòng phụ "Digital marketing" — thừa ở mật độ này */
+/* Nút chọn property ngay dưới tên dashboard: nền --sub2 như ô nhập, không tô brand. */
+.propwrap{margin-top:12px}
+.propsw{width:100%;display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--r-sm);
+        background:var(--sub2);color:var(--ink);text-align:left}
+.propsw:not(:disabled):hover{background:var(--line2)}
+.propsw:disabled{cursor:default}
+.propsw .ic{display:flex;color:var(--ink3)}
+.propsw .pt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.propsw .pl{font-size:9.5px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
+.propsw .pn{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.propsw>.lu{color:var(--ink3);flex:0 0 auto}
+.pop.prop{top:44px;left:0;right:auto;width:100%;max-height:320px;overflow-y:auto}
+#stage.rail .propsw{justify-content:center;padding:6px 0}
+#stage.rail .propsw .pt,#stage.rail .propsw>.lu{display:none}
+#stage.rail .pop.prop{width:200px}
 #collapse{margin-left:auto;width:24px;height:24px;flex:0 0 24px;border-radius:var(--r-sm);
           color:var(--ink3);display:flex;align-items:center;justify-content:center}
 #collapse:hover{background:var(--sub2);color:var(--ink)}

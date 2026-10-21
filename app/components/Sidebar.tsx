@@ -1,7 +1,7 @@
 /* Sidebar 206px (thu gọn 58px), ngăn với nội dung bằng 1px hairline.
    Mục đang chọn tô nền --sub2 + chữ --ink, KHÔNG tô brand: brand để dành cho nút hành động chính. */
 import type { ReactNode } from 'react';
-import { CFG, labelOf, lower } from '@/lib/config';
+import { CFG, appName, labelOf, lower } from '@/lib/config';
 import { vi } from '@/lib/format';
 import type { PageId } from '@/lib/types';
 import type { IconName } from '@/lib/icons';
@@ -19,8 +19,16 @@ export function navItems(counts: { alerts: number; primary: number; secondary: n
   ];
 }
 
-export function Sidebar({ items, page, onPage, onRail, shown, total, note, theme, onTheme, onReset, acctOpen, onAcct }: {
+export function Sidebar({
+  items, page, onPage, onRail, shown, total, note, theme, onTheme, onReset, acctOpen, onAcct,
+  property, properties, onProperty, propOpen, onPropToggle,
+}: {
   items: NavItem[];
+  property: string | null;
+  properties: string[];
+  onProperty: (p: string) => void;
+  propOpen: boolean;
+  onPropToggle: () => void;
   page: PageId;
   onPage: (p: PageId) => void;
   onRail: () => void;
@@ -53,10 +61,29 @@ export function Sidebar({ items, page, onPage, onRail, shown, total, note, theme
     <aside id="side">
       <div className="brand">
         <div className="mark"><Icon name="activity" /></div>
-        <div className="brandtxt"><b>{CFG.app.name}</b></div>
+        <div className="brandtxt"><b>{appName(property)}</b></div>
         <button id="collapse" title="Thu gọn menu" aria-label="Thu gọn menu" onClick={onRail}>
           <Icon name="panel-left" className="lu-sm" />
         </button>
+      </div>
+
+      {/* Chọn property: mỗi property là một tab của Google Sheet có đủ cột. */}
+      <div className="wrap propwrap">
+        <button className="propsw" onClick={onPropToggle} disabled={properties.length < 2 && !!property}
+                title={`Property: ${property ?? '—'}`} aria-haspopup="menu" aria-expanded={propOpen}>
+          <span className="ic"><Icon name="layout-dashboard" className="lu-sm" /></span>
+          <span className="pt"><span className="pl">Property</span><span className="pn">{property ?? 'Đang tải…'}</span></span>
+          {properties.length > 1 && <Icon name="chevron-down" className="lu-xs" />}
+        </button>
+        <div className="pop prop" role="menu" hidden={!propOpen}>
+          <div className="h">Chọn property · {properties.length}</div>
+          {properties.map((p) => (
+            <button key={p} className="r" role="menuitemradio" aria-checked={p === property} onClick={() => onProperty(p)}>
+              <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p}</span>
+              {p === property && <span style={{ marginLeft: 'auto', display: 'flex' }}><Icon name="check" className="lu-sm" /></span>}
+            </button>
+          ))}
+        </div>
       </div>
 
       <nav id="nav">{nav}</nav>

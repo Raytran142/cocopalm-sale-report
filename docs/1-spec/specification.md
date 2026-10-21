@@ -2,7 +2,7 @@
 
 > Sinh tự động từ `docs/1-spec/dashboard.json` lúc 2026-10-20 09:30 (giờ Việt Nam). Muốn đổi điều gì, nói với Claude — Claude sửa JSON rồi chạy lại render. Không sửa tay file này: lần render sau sẽ dừng lại và báo.
 
-Domain: chung · Nguồn: Google Sheets "Sale report CocoPalm", tab `Sale2` · Ngày lập: 2026-10-20
+Domain: chung · Nguồn: Google Sheets "Sale report CocoPalm", tab `CocoPalm` (tên cũ `Sale2`) · Ngày lập: 2026-10-20
 
 ## 1 · Mục tiêu
 
@@ -58,7 +58,7 @@ Cấu trúc bốn trang là cố định. Chỉ dimension của trang 2 và tran
 
 ## 7 · Dữ liệu và vai trò từng cột
 
-Nguồn: Google Sheets "Sale report CocoPalm", tab `Sale2` · 2.268 dòng · 2025-10-01 → 2026-10-16 (381 ngày) · Hạt dữ liệu: 1 ngày × một tổ hợp số khách × kênh OTA × trạng thái × loại phòng
+Nguồn: Google Sheets "Sale report CocoPalm", tab `CocoPalm` (tên cũ `Sale2`) · 2.268 dòng · 2025-10-01 → 2026-10-16 (381 ngày) · Hạt dữ liệu: 1 ngày × một tổ hợp số khách × kênh OTA × trạng thái × loại phòng
 
 | # | Cột | Nhãn | Kiểu | Vai trò | Ví dụ |
 |---|---|---|---|---|---|
@@ -247,3 +247,6 @@ Dashboard theo dõi cho biết *cái gì đang xảy ra*, không cho biết *vì
 - **G31 · Cao** — (2026-10-21, sửa tay) `room_total` và `room_night` tính là 0 ở booking `status = cancelled` (`zeroWhen`). Doanh thu phòng, Room night và ADR không còn gồm booking huỷ; Số booking vẫn đếm cả booking huỷ.  
   Vì: Booking huỷ có `booking_total = 0` nhưng vẫn giữ `room_total` (147 booking, 556 tr) và room night; giữ lại làm Doanh thu phòng cao hơn Doanh thu booking và làm lệch ADR. Bỏ cả room night để tử số và mẫu số của ADR cùng phạm vi. Số tham chiếu §11 đã tính lại; ngưỡng ADR 970.000 giữ nguyên.  
   Nếu sai: dashboard.json › columns[room_total|room_night].zeroWhen
+- **G32 · Cao** — (2026-10-21, sửa tay) Nhiều property: mỗi tab có đủ bộ cột là một property (tên = tên tab), chọn ở sidebar, tên dashboard "{property} Sale Dashboard", mục tiêu ADR tính lại p75 theo từng property. Chi tiết: `docs/2-design/multi-property.md`.  
+  Vì: Số liệu nhiều khách sạn cập nhật vào nhiều tab; người dùng chọn tự nhận tab theo tiêu đề cột và xem từng căn một.  
+  Nếu sai: dashboard.json › app.nameTemplate, thresholds[].byProperty

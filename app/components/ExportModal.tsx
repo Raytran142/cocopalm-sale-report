@@ -3,7 +3,7 @@
    "Theo bộ lọc dashboard" trả về ĐÚNG tập dòng đang hiển thị (filtered), không lọc lại từ đầu.
    Sửa ở đây không đụng bộ lọc dashboard. Chỉ xuất dữ liệu: không PNG, không PDF. */
 import { useEffect, useMemo, useState } from 'react';
-import { CFG, COLUMNS, PRIMARY, labelOf } from '@/lib/config';
+import { CFG, COLUMNS, PRIMARY, appName, labelOf } from '@/lib/config';
 import { DAY, ddmm, isoAt, isoToUtc, vi } from '@/lib/format';
 import type { Filters, Row } from '@/lib/types';
 import { Icon } from './Icon';
@@ -15,7 +15,8 @@ type Sep = ',' | ';';
 const valueOf = (r: Row, name: string, type: string): string | number =>
   type === 'date' ? r.date : type === 'text' ? r.d[name] ?? '' : r.m[name] ?? 0;
 
-export function ExportModal({ open, filtered, rows, filters, days, from, onClose }: {
+export function ExportModal({ open, filtered, rows, filters, days, from, property, onClose }: {
+  property: string | null;
   open: boolean;
   filtered: Row[];
   rows: Row[];
@@ -71,7 +72,9 @@ export function ExportModal({ open, filtered, rows, filters, days, from, onClose
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }); // BOM: Excel mới đọc đúng tiếng Việt
     const u = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const name = CFG.export?.filename ?? CFG.app.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    // tên file theo property đang xem: "jade-sale-dashboard_2026-09-01_2026-09-30.csv"
+    const name = appName(property).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     a.href = u;
     a.download = `${name}_${isoAt(from, range.from)}_${isoAt(from, range.to)}.csv`;
     a.click();

@@ -166,6 +166,43 @@ export function alerts(filtered: Row[], all: Row[]): Alert[] {
 
 export const alertTotal = (as: Alert[]): number => as.reduce((s, a) => s + a.keys.length, 0);
 
+/* ── Ngưỡng tính riêng cho từng property ───────────────────────────────────
+   Ngưỡng có rule p75 / p25 / median_x1.25 được tính lại trên dữ liệu của property đang xem (giá trị chỉ số
+   theo từng dòng, bỏ dòng có mẫu số 0), làm tròn 2 chữ số có nghĩa theo hướng có lợi cho mục tiêu
+   (lên với p75 / median_x1.25, xuống với p25) — cùng luật dashboard-design dùng khi soạn thiết kế.
+   byProperty[property] (con số người dùng chốt) thắng mọi tính toán. */
+function quantile(sorted: number[], q: number): number {
+  if (!sorted.length) return NaN;
+  const i = (sorted.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
+}
+function round2(v: number, dir: 'up' | 'down'): number {
+  if (!Number.isFinite(v) || v === 0) return v;
+  const p = 10 ** (Math.floor(Math.log10(Math.abs(v))) - 1);
+  return (dir === 'up' ? Math.ceil(v / p) : Math.floor(v / p)) * p;
+}
+
+export function thresholdTargets(rows: Row[], property: string): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const t of CFG.thresholds) {
+    const fixed = t.byProperty?.[property];
+    if (fixed !== undefined) { out[t.key] = fixed; continue; }
+    if (t.rule !== 'p75' && t.rule !== 'p25' && t.rule !== 'median_x1.25') continue;
+    const m = METRICS[t.metric];
+    const ratio = !!m?.den?.length;
+    const vals = rows
+      .filter((r) => !ratio || m.den!.reduce((s, c) => s + (r.m[c.replace(/^-/, '')] ?? 0), 0) !== 0)
+      .map((r) => agg([r])[t.metric] ?? 0)
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
+    if (!vals.length) continue;
+    if (t.rule === 'p75') out[t.key] = round2(quantile(vals, 0.75), 'up');
+    else if (t.rule === 'p25') out[t.key] = round2(quantile(vals, 0.25), 'down');
+    else out[t.key] = round2(quantile(vals, 0.5) * 1.25, 'up');
+  }
+  return out;
+}
+
 /* ── Tóm tắt cho script kiểm tra (GET /api/data?summary=1) ───────────────── */
 export function summary(rows: Row[], meta: Meta) {
   const f = defaultFilters(meta.days);

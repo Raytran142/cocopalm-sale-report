@@ -1,4 +1,5 @@
 /* GET /api/data           → { rows, meta }  (trình duyệt gọi một lần khi mở dashboard, và khi bấm Tải lại)
+   GET /api/data?property=Jade → dữ liệu của tab "Jade"; meta.properties liệt kê mọi tab đủ cột
    GET /api/data?summary=1 → { meta, summary } (script check.mjs dùng để đối chiếu số tham chiếu)
    Không bao giờ trả về khoá: meta.env chỉ cho biết biến nào CÓ, không cho biết giá trị. */
 import { NextResponse } from 'next/server';
@@ -9,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
-    const data = await loadData();
+    const data = await loadData(new URL(req.url).searchParams.get('property'));
     if (new URL(req.url).searchParams.has('summary')) {
       return NextResponse.json({ meta: data.meta, summary: summary(data.rows, data.meta) });
     }

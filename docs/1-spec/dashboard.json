@@ -1,18 +1,19 @@
 {
   "version": 1,
   "app": {
-    "name": "CocoPalm Sale Dashboard",
-    "tagline": "Theo dõi doanh thu booking, room night và giá phòng trung bình theo kênh OTA mỗi ngày",
+    "name": "Sale Dashboard",
+    "tagline": "Theo dõi doanh thu booking, số booking và giá phòng trung bình theo kênh OTA của từng property mỗi ngày",
     "domain": "chung",
     "user": {
       "name": "Bạn",
       "first": "bạn"
-    }
+    },
+    "nameTemplate": "{property} Sale Dashboard"
   },
   "source": {
     "type": "sheets",
-    "sheet": "Sale2",
-    "title": "Sale report CocoPalm"
+    "sheet": "CocoPalm",
+    "title": "Sale report (nhiều property)"
   },
   "columns": [
     {
@@ -284,8 +285,7 @@
   },
   "defaultDays": 30,
   "export": {
-    "separator": ";",
-    "filename": "cocopalm-sale-dashboard"
+    "separator": ";"
   },
   "design": {
     "system": "monochrome"
@@ -375,6 +375,13 @@
       "decision": "room_total và room_night tính là 0 ở booking status = cancelled (zeroWhen); Doanh thu phòng, Room night và ADR không còn gồm booking huỷ.",
       "why": "Booking huỷ có booking_total = 0 nhưng vẫn giữ room_total (147 booking, 556 tr) và room_night; giữ lại làm Doanh thu phòng cao hơn Doanh thu booking và làm lệch ADR.",
       "fix": "dashboard.json › columns[room_total|room_night].zeroWhen"
+    },
+    {
+      "level": "Cao",
+      "doc": "spec",
+      "decision": "Nhiều property: mỗi tab có đủ bộ cột là một property, tên property = tên tab; nút chọn property ở sidebar; tên dashboard = \"{property} Sale Dashboard\"; ngưỡng ADR tính lại (p75) theo từng property.",
+      "why": "Yêu cầu 2026-10-21: số liệu nhiều khách sạn (CocoPalm, Jade, JM Beach, Aqua Vista…) cập nhật vào nhiều tab; người dùng chọn tự nhận tab theo tiêu đề cột, xem từng căn một (không gộp).",
+      "fix": "dashboard.json › app.nameTemplate, thresholds[].byProperty; app/lib/data-source.ts › listProperties"
     }
   ],
   "reference": {
