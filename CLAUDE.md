@@ -13,7 +13,8 @@ Sale Dashboard/
 ├── .claude/           # Cấu hình Claude Code cho project
 ├── docs/
 │   ├── 1-spec/        # Đặc tả yêu cầu (specification.md)
-│   └── 2-design/      # Thiết kế: design.md, layout.md, components.md
+│   └── 2-design/      # Thiết kế: design.md, layout.md, components.md (do skill sinh)
+│                      #   + time-page.md (viết tay, trang "Theo thời gian")
 └── app/               # Mã nguồn Next.js (TypeScript, Tailwind, App Router, không dùng src/)
     ├── app/           # Thư mục route của App Router
     └── public/        # Tài nguyên tĩnh
