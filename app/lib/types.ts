@@ -32,7 +32,7 @@ export type Group = { k: string; n: number; v: Agg };
 export type Period = { k: number | string; label: string; v: Agg };
 
 export type Grain = 'day' | 'week' | 'month';
-export type PageId = 'home' | 'primary' | 'secondary' | 'source';
+export type PageId = 'home' | 'primary' | 'secondary' | 'time' | 'source';
 export type Preset = 7 | 30 | 90 | 'all' | 'custom';
 
 export type Filters = {

@@ -14,6 +14,7 @@ export function navItems(counts: { alerts: number; primary: number; secondary: n
     { id: 'home', label: 'Tổng quan', icon: 'layout-dashboard', group: 'Phân tích', badge: counts.alerts || undefined, alert: true },
     { id: 'primary', label: 'Theo ' + lower(labelOf(CFG.pages.primary)), icon: CFG.pages.primaryIcon ?? 'chart-pie', group: 'Phân tích', badge: counts.primary },
     { id: 'secondary', label: 'Theo ' + lower(labelOf(CFG.pages.secondary)), icon: CFG.pages.secondaryIcon ?? 'target', group: 'Phân tích', badge: counts.secondary },
+    { id: 'time', label: 'Theo thời gian', icon: 'trending-up', group: 'Phân tích' },
     { id: 'source', label: 'Nguồn dữ liệu', icon: 'database', group: 'Hệ thống' },
   ];
 }

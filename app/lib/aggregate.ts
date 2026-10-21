@@ -127,6 +127,9 @@ export function applyFilters(rows: Row[], f: Filters): Row[] {
     r.t >= f.from && r.t <= f.to && dimsMatch(r, f) && (!losing || losing.has(r.d[ALERT_DIM])));
 }
 
+/* Chỉ bộ lọc dimension, bỏ khoảng ngày — trang "Theo thời gian" cần đủ mọi tháng. */
+export const applyDims = (rows: Row[], f: Filters): Row[] => rows.filter((r) => dimsMatch(r, f));
+
 /* Kỳ trước = cùng số ngày, ngay trước from, cùng bộ lọc dimension. */
 export function prevRows(rows: Row[], f: Filters): Row[] {
   const len = f.to - f.from + 1;

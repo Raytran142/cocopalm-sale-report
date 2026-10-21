@@ -13,8 +13,10 @@ import { TopBar } from '@/components/TopBar';
 import { DimPage } from '@/components/pages/DimPage';
 import { OverviewPage } from '@/components/pages/OverviewPage';
 import { SourcePage } from '@/components/pages/SourcePage';
+import { TimePage } from '@/components/pages/TimePage';
+import { defaultMonth, monthLabel, months } from '@/lib/monthly';
 import { ALERT_DIM, FILTER_DIM, PRIMARY, SECONDARY, labelOf, lower } from '@/lib/config';
-import { alertTotal, alerts as alertsOf, applyFilters, defaultFilters, filterCount, prevRows, type Alert } from '@/lib/aggregate';
+import { alertTotal, alerts as alertsOf, applyDims, applyFilters, defaultFilters, filterCount, prevRows, type Alert } from '@/lib/aggregate';
 import { clockOf, ddmm, isoAt, vi } from '@/lib/format';
 import { SIDE_RAIL, SIDE_WIDE, layout } from '@/lib/tokens';
 import type { DataErr, DataOk, Filters, Grain, Meta, PageId, Row } from '@/lib/types';
@@ -35,6 +37,7 @@ export default function DashboardPage() {
   const [drawer, setDrawer] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [pop, setPop] = useState<'notif' | 'acct' | null>(null);
+  const [month, setMonth] = useState<string | null>(null); // tháng đang chọn ở trang "Theo thời gian"; null = mặc định
 
   const fetchData = useCallback(async (first: boolean) => {
     if (first) setLoad('loading');
@@ -81,6 +84,10 @@ export default function DashboardPage() {
   const L = useMemo(() => layout(rail ? SIDE_RAIL : SIDE_WIDE), [rail]);
   const days = meta?.days ?? 0;
   const from = meta?.from ?? '2000-01-01';
+  const isTime = page === 'time';
+  const dimRows = useMemo(() => applyDims(rows, filters), [rows, filters]);
+  const ms = useMemo(() => (meta ? months(dimRows, meta.from, meta.to) : []), [dimRows, meta]);
+  const sel = month && ms.some((m) => m.k === month) ? month : defaultMonth(ms);
 
   const items = navItems({
     alerts: alertTotal(al),
@@ -112,7 +119,9 @@ export default function DashboardPage() {
   ];
   const n = filters.to - filters.from + 1;
   const period = filters.preset === 'custom' ? `${n} ngày (tùy chọn)` : filters.preset === 'all' ? `Toàn bộ ${n} ngày` : `${n} ngày`;
-  const context = meta
+  const context = meta && isTime
+    ? `${ms.length} tháng (${ms[0]?.label} → ${ms[ms.length - 1]?.label}) · đang xem ${monthLabel(sel)} · trang này không áp khoảng ngày của bộ lọc`
+    : meta
     ? `${period} (${ddmm(isoAt(from, filters.from))} → ${ddmm(isoAt(from, filters.to))}) · ${vi(new Set(filtered.map((r) => r.d[SECONDARY])).size)} ${lower(labelOf(SECONDARY))} trên ${vi(new Set(filtered.map((r) => r.d[PRIMARY])).size)} ${lower(labelOf(PRIMARY))}`
     : 'Đang tải dữ liệu';
 
@@ -135,7 +144,9 @@ export default function DashboardPage() {
     );
   } else if (isSource) {
     body = <SourcePage rows={rows} meta={meta} L={L} />;
-  } else if (!filtered.length) {
+  } else if (isTime && dimRows.length) {
+    body = <TimePage ms={ms} rows={dimRows} L={L} param={filters.param} sel={sel} onSel={setMonth} />;
+  } else if (!(isTime ? dimRows : filtered).length) {
     body = (
       <>
         <KpiBand rows={[]} prev={prev} kpiW={L.kpiW} from={from} />
