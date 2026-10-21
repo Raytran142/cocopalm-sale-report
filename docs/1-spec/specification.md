@@ -35,10 +35,10 @@ Cấu trúc bốn trang là cố định. Chỉ dimension của trang 2 và tran
 
 | # | Nhãn | Công thức | Chiều tốt | Đường chuẩn sparkline | Tô màu |
 |---|---|---|---|---|---|
-| 1 | Doanh thu booking | `SUM(booking_total)` | cao hơn tốt hơn | trung bình kỳ | không |
+| 1 | Doanh thu booking | `SUM(booking_total)`, mỗi `unique_id` một lần | cao hơn tốt hơn | trung bình kỳ | không |
 | 2 | Doanh thu phòng | `SUM(room_total)` | cao hơn tốt hơn | trung bình kỳ | không |
 | 3 | Room night | `SUM(room_night)` | cao hơn tốt hơn | trung bình kỳ | không |
-| 4 | Số phòng | `SUM(room_amount)` | cao hơn tốt hơn | trung bình kỳ | không |
+| 4 | Số booking | `COUNT DISTINCT(unique_id)` (cột suy ra `booking_count`) | cao hơn tốt hơn | trung bình kỳ | không |
 | 5 | Giá phòng TB / đêm (ADR) | `SUM(room_total) / SUM(room_night)` | cao hơn tốt hơn | mục tiêu 970.000 | có |
 
 1. **Đường chuẩn là bắt buộc.** Sparkline không có mốc chỉ cho thấy hình dáng, không cho biết đang trên hay dưới ngưỡng.
@@ -70,7 +70,8 @@ Nguồn: Google Sheets "Sale report CocoPalm", tab `Sale2` · 2.268 dòng · 202
 | 6 | `checkout_date` | Ngày check-out | date | `IGNORE` | — |
 | 7 | `customer_first_name` | Customer first name | text | `IGNORE` | — |
 | 8 | `customer_last_name` | Customer last name | text | `IGNORE` | — |
-| 9 | `room_amount` | Số phòng | number | `METRIC` | 1 |
+| 9 | `room_amount` | Số phòng | number | `IGNORE` | — |
+| 9b | `booking_count` (suy ra) | Số booking | number | `METRIC` | 1 ở dòng đầu của mỗi `unique_id`, 0 ở các dòng sau |
 | 10 | `ota_source` | Kênh OTA | text | `PRIMARY_DIM` | BookingCom |
 | 11 | `ota_res_id` | Ota res id | text | `IGNORE` | — |
 | 12 | `occupancy` | Số khách | text | `SECONDARY_DIM` | A:2 C:0 I:0 |
@@ -117,7 +118,7 @@ Mới có 1/4 ngưỡng. KPI không có ngưỡng thì giữ mực và lấy tru
 
 | Có trong v1 | Để lại sau |
 |---|---|
-| 4 trang · 5 KPI · 4 chart mỗi trang · lọc · xuất CSV · cảnh báo · sáng/tối | Đăng nhập bằng Google và giới hạn người được xem.; Đưa lên Internet để cả đội mở bằng trình duyệt.; Khử trùng lặp theo unique_id (giữ bản ghi mới nhất) trước khi cộng số liệu. |
+| 4 trang · 5 KPI · 4 chart mỗi trang · lọc · xuất CSV · cảnh báo · sáng/tối | Đăng nhập bằng Google và giới hạn người được xem.; Đưa lên Internet để cả đội mở bằng trình duyệt. |
 
 Không có trong v1: trang phân tích sâu (phễu, cohort, ma trận thời gian) · chatbox AI · ô tìm kiếm toàn cục · xuất PNG/PDF.
 
@@ -129,10 +130,10 @@ Sau khi build, dashboard phải hiện đúng các số này. Lệch là sai ở
 |---|---|---|
 | Khoảng ngày | 2026-09-17 → 2026-10-16 | 2025-10-01 → 2026-10-16 |
 | Số dòng | 143 | 2.268 |
-| Doanh thu booking | 652.541.211 | 7.658.471.037 |
+| Doanh thu booking | 429.673.227 | 5.538.687.278 |
 | Doanh thu phòng | 428.219.727 | 6.169.293.833 |
 | Room night | 483 | 7.448 |
-| Số phòng | 215 | 3.206 |
+| Số booking | 122 | 1.939 |
 | Giá phòng TB / đêm (ADR) | 886.583 | 828.315 |
 
 Số nhóm: Kênh OTA 5 · Loại phòng 3.
@@ -141,7 +142,7 @@ Số nhóm: Kênh OTA 5 · Loại phòng 3.
 
 - Ngày trên dashboard là ngày đặt (created_date), không phải ngày check-in.
 - Tổng mặc định gồm cả booking trạng thái cancelled và modified; dùng bộ lọc Trạng thái để chỉ xem booking new.
-- Sheet có 2.268 dòng nhưng chỉ 1.938 mã booking (unique_id): một booking có thể xuất hiện nhiều dòng (bản new / modified / cancelled), cộng dồn có thể bị tính trùng.
+- Mỗi dòng của sheet là một phòng của booking; booking nhiều phòng có nhiều dòng cùng unique_id. Doanh thu booking chỉ tính một lần cho mỗi booking; Số booking đếm unique_id. Booking huỷ có booking_total = 0 nhưng vẫn giữ room_total, nên Doanh thu phòng và ADR gồm cả booking huỷ trừ khi lọc Trạng thái.
 
 ## 13 · Dashboard này KHÔNG trả lời được gì
 
@@ -210,7 +211,7 @@ Dashboard theo dõi cho biết *cái gì đang xảy ra*, không cho biết *vì
 - **G19 · Cao** — Chỉ có 1/4 ngưỡng.  
   Vì: Thiếu cột để tính các ngưỡng còn lại. KPI không có ngưỡng thì giữ mực, sparkline lấy trung bình kỳ làm đường chuẩn.  
   Nếu sai: dashboard.json › thresholds.
-- **G20 · Vừa** — 5 KPI: Doanh thu booking · Doanh thu phòng · Room night · Số phòng · Giá phòng TB / đêm (ADR).  
+- **G20 · Vừa** — 5 KPI: Doanh thu booking · Doanh thu phòng · Room night · Số booking · Giá phòng TB / đêm (ADR).  
   Vì: 5 chỉ số có tổng lớn nhất trong dữ liệu.  
   Nếu sai: dashboard.json › kpis.
 - **G21 · Vừa** — 4 lựa chọn chỉ số: Doanh thu booking · Doanh thu phòng · Room night · Giá phòng TB / đêm (ADR); mặc định Doanh thu booking.  
@@ -237,3 +238,9 @@ Dashboard theo dõi cho biết *cái gì đang xảy ra*, không cho biết *vì
 - **G28 · Cao** — room_amount đổi format money → int, nhãn 'Số phòng'; room_total, booking_total đổi int → money (VND).  
   Vì: room_amount có trung vị 1, max 8 (số phòng mỗi booking); hai cột doanh thu có trung vị 1.916.460 và 2.090.000 VND.  
   Nếu sai: dashboard.json › columns, metrics (format)
+- **G29 · Cao** — (2026-10-21, sửa tay) KPI "Số phòng" (SUM room_amount) thay bằng "Số booking" = số `unique_id` khác nhau, qua cột suy ra `booking_count` (1 ở dòng đầu của mỗi booking, 0 ở các dòng sau).  
+  Vì: Mỗi dòng của sheet là một phòng của booking; booking nhiều phòng có nhiều dòng cùng `unique_id` (2.283 dòng / 1.953 booking). Trạng thái và ngày đặt giống nhau trên mọi dòng của một booking nên đếm theo dòng đầu không lệch khi lọc theo ngày, kênh, trạng thái. Lọc theo loại phòng thì booking nhiều loại phòng chỉ được đếm ở loại phòng của dòng đầu.  
+  Nếu sai: dashboard.json › columns[booking_count], metrics[booking_count], kpis
+- **G30 · Cao** — (2026-10-21, sửa tay) Doanh thu booking chỉ tính `booking_total` ở dòng đầu của mỗi `unique_id`, các dòng phòng sau = 0 (`onePerEntity: "unique_id"`).  
+  Vì: `booking_total` lặp nguyên giá trị trên mọi dòng của 222 booking nhiều phòng; cộng theo dòng làm tổng bị đếm trùng 2.121.237.259 (7,72 tỷ → 5,60 tỷ). Số tham chiếu §11 đã tính lại. Lọc theo loại phòng thì doanh thu của booking nhiều loại phòng nằm ở loại phòng của dòng đầu.  
+  Nếu sai: dashboard.json › columns[booking_total].onePerEntity

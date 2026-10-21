@@ -8,4 +8,12 @@
 - Trang bỏ qua khoảng ngày của bộ lọc, giữ bộ lọc kênh / loại phòng / trạng thái.
 - Tháng chưa trọn (tháng cuối dữ liệu) so với **cùng số ngày** của tháng trước / năm trước. Tháng mặc định là tháng trọn gần nhất.
 - File: `app/lib/monthly.ts`, `app/components/pages/TimePage.tsx`, `app/components/charts/MonthBars.tsx`; nối vào `app/app/dashboard/page.tsx`, `Sidebar.tsx`, `lib/types.ts`, `lib/aggregate.ts` (`applyDims`).
-- Chạy lại `dashboard-build` scaffold có thể ghi đè các file khung đã sửa (page.tsx, Sidebar.tsx, types.ts, aggregate.ts) — kiểm diff sau mỗi lần scaffold.
+- Chạy lại `dashboard-build` scaffold có thể ghi đè (áp dụng cả cho mục dưới) các file khung đã sửa (page.tsx, Sidebar.tsx, types.ts, aggregate.ts) — kiểm diff sau mỗi lần scaffold.
+
+## 2026-10-21 · "Số booking" thay "Số phòng"
+
+- Mỗi dòng của tab Sale2 là **một phòng** của booking: booking nhiều phòng có nhiều dòng cùng `unique_id`, cùng status, cùng created_date (2.283 dòng / 1.953 booking).
+- "Số booking" = số `unique_id` khác nhau, qua cột suy ra `booking_count` (`countDistinct: "unique_id"` trong dashboard.json; tính ở `app/lib/data-source.ts`). `room_amount` chuyển IGNORE.
+- Tài liệu skill sinh (spec/design/layout/components) đã sửa tay vì script render của skill không còn trên máy; ghi là G29.
+- `booking_total` lặp nguyên giá trị trên mọi dòng của booking nhiều phòng (222 booking) ⇒ đã sửa: chỉ giữ ở dòng đầu (`onePerEntity: "unique_id"`), tổng 7,72 tỷ → 5,60 tỷ (G30).
+- Chưa xử lý: booking huỷ có booking_total = 0 nhưng vẫn giữ room_total (556 tr), nên Doanh thu phòng và ADR gồm cả booking huỷ khi không lọc Trạng thái.

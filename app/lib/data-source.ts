@@ -168,7 +168,8 @@ export function toNum(v: unknown): number | null {
 export function toRows(values: unknown[][]): { rows: Row[]; skipped: number; badDates: number; badNumbers: number; header: string[] } {
   const header = (values[0] ?? []).map((v) => String(v ?? '').trim());
   const idx = new Map(header.map((h, i) => [h.toLowerCase(), i]));
-  const missing = COLUMNS.filter((c) => !idx.has(c.name.toLowerCase())).map((c) => c.name);
+  const missing = COLUMNS.flatMap((c) => [c.countDistinct ?? c.name, ...(c.onePerEntity ? [c.onePerEntity] : [])])
+    .filter((n) => !idx.has(n.toLowerCase()));
   if (!header.length) throw new SourceError('Sheet rỗng.', `Tab "${CFG.source.sheet}" chưa có dữ liệu, hoặc sai tên tab.`);
   if (missing.length) {
     throw new SourceError(`Thiếu cột: ${missing.join(', ')}`, `Hàng đầu của tab phải có đúng tên cột như dashboard.json. Đang có: ${header.join(', ')}`);
@@ -177,17 +178,31 @@ export function toRows(values: unknown[][]): { rows: Row[]; skipped: number; bad
   const order = dateOrder(values.slice(1).map((r) => at(r, DATE_COL)));
   const rows: Row[] = [];
   let skipped = 0, badDates = 0, badNumbers = 0;
+  const seen = new Map<string, Set<string>>(); // cột countDistinct → các giá trị đã đếm
   for (const raw of values.slice(1)) {
     if (!raw.length || raw.every((v) => v === '' || v == null)) { skipped++; continue; }
     const date = toIsoDate(at(raw, DATE_COL), order);
     if (!date) { badDates++; continue; }
     const d: Record<string, string> = {}, m: Record<string, number> = {};
     for (const c of COLUMNS) {
-      if (c.type === 'text') d[c.name] = String(at(raw, c.name) ?? '').trim();
+      if (c.countDistinct) {
+        const k = String(at(raw, c.countDistinct) ?? '').trim();
+        let s = seen.get(c.name);
+        if (!s) seen.set(c.name, (s = new Set()));
+        m[c.name] = k && !s.has(k) ? 1 : 0;
+        if (k) s.add(k);
+      } else if (c.type === 'text') d[c.name] = String(at(raw, c.name) ?? '').trim();
       else if (c.type === 'number') {
         const n = toNum(at(raw, c.name));
         if (n === null) badNumbers++;
         m[c.name] = n ?? 0;
+        if (c.onePerEntity) {
+          const k = String(at(raw, c.onePerEntity) ?? '').trim();
+          let s = seen.get(c.name);
+          if (!s) seen.set(c.name, (s = new Set()));
+          if (k && s.has(k)) m[c.name] = 0;
+          if (k) s.add(k);
+        }
       }
     }
     rows.push({ t: 0, date, d, m });

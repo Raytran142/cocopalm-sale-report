@@ -17,6 +17,12 @@ export type Column = {
   entity?: string;
   format?: Format;
   icons?: Record<string, IconName>;
+  /* Cột SUY RA, không có trong sheet: 1 ở dòng đầu tiên của mỗi giá trị khác nhau của cột này, 0 ở các dòng sau.
+     Cộng lại = số giá trị khác nhau (vd. số booking theo unique_id khi một booking nhiều phòng có nhiều dòng). */
+  countDistinct?: string;
+  /* Cột số lặp NGUYÊN giá trị trên mọi dòng của một thực thể (vd. booking_total trên mỗi dòng phòng của
+     một booking): chỉ giữ giá trị ở dòng đầu của mỗi giá trị khác nhau của cột này, các dòng sau = 0. */
+  onePerEntity?: string;
 };
 
 export type Metric = {

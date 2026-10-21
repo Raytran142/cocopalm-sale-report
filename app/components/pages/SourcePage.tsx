@@ -84,7 +84,7 @@ export function SourcePage({ rows, meta, L }: { rows: Row[]; meta: Meta; L: Layo
                   <tr key={c.name}>
                     <td>{c.name}</td>
                     <td className="mono" style={{ textAlign: 'left', color: 'var(--ink3)' }}>{c.type}</td>
-                    <td style={{ textAlign: 'left' }}><span className="role">{c.role}{c.role === 'ATTRIBUTE' ? ' · MAX' : ''}</span></td>
+                    <td style={{ textAlign: 'left' }}><span className="role">{c.role}{c.role === 'ATTRIBUTE' ? ' · MAX' : ''}{c.countDistinct ? ` · đếm ${c.countDistinct}` : ''}</span></td>
                     <td style={{ color: 'var(--label2)' }}>{example(c.name, c.type)}</td>
                   </tr>
                 ))}

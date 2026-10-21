@@ -32,7 +32,7 @@ Giữ khung chung của app (canvas 1600×900, Row 2 chia 30/70, Row 3 chia 40/6
 
 | Vị trí | Thành phần |
 |---|---|
-| Băng KPI | 5 KPI (Doanh thu booking, Doanh thu phòng, Room night, Số phòng, ADR) của tháng đang chọn |
+| Băng KPI | 5 KPI (Doanh thu booking, Doanh thu phòng, Room night, Số booking, ADR) của tháng đang chọn |
 | Row 2 · trái 30% | Kênh OTA kéo tăng / giảm |
 | Row 2 · phải 70% | Doanh thu theo tháng + cùng kỳ năm trước |
 | Row 3 · trái 40% | Doanh thu tháng theo kênh OTA (cột chồng) |

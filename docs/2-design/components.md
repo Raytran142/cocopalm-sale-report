@@ -20,10 +20,10 @@ Băng 118px, 5 thẻ. Mỗi thẻ: nhãn + icon · số lớn · so kỳ trướ
 
 | # | Thẻ | Số lớn | Chân thẻ | Màu |
 |---|---|---|---|---|
-| 1 | Doanh thu booking | `SUM(booking_total)` | so với … kỳ trước | giữ mực |
+| 1 | Doanh thu booking | `SUM(booking_total)`, mỗi `unique_id` một lần | so với … kỳ trước | giữ mực |
 | 2 | Doanh thu phòng | `SUM(room_total)` | so với … kỳ trước | giữ mực |
 | 3 | Room night | `SUM(room_night)` | so với … kỳ trước | giữ mực |
-| 4 | Số phòng | `SUM(room_amount)` | so với … kỳ trước | giữ mực |
+| 4 | Số booking | `COUNT DISTINCT(unique_id)` | so với … kỳ trước | giữ mực |
 | 5 | Giá phòng TB / đêm (ADR) | `SUM(room_total) / SUM(room_night)` | mục tiêu 970k · đang thiếu … | xanh khi ≥ 970k, còn lại đỏ |
 
 So kỳ trước = cùng số ngày, ngay trước khoảng đang xem, cùng bộ lọc. Chênh dưới 0,2% hiện trung tính.
@@ -36,8 +36,8 @@ So kỳ trước = cùng số ngày, ngay trước khoảng đang xem, cùng b�
 | Area một chuỗi | không | trang 1, xu hướng chỉ số đang chọn |
 | Line nhiều đường | 1 hàng (24px) | trang 2, 3 — top 5 nhóm |
 | Bar xếp hạng | không | trang 1 (top loại phòng), trang 2, 3 — tối đa 7 thanh |
-| Bảng theo kỳ tô nhiệt | không | trang 1 — cột: Doanh thu booking, Doanh thu phòng, Room night, Số phòng, Giá phòng TB / đêm (ADR) |
-| Bảng chỉ số đầy đủ | không | trang 2, 3 — cột: Doanh thu booking, Doanh thu phòng, Room night, Số phòng, Giá phòng TB / đêm (ADR) |
+| Bảng theo kỳ tô nhiệt | không | trang 1 — cột: Doanh thu booking, Doanh thu phòng, Room night, Số booking, Giá phòng TB / đêm (ADR) |
+| Bảng chỉ số đầy đủ | không | trang 2, 3 — cột: Doanh thu booking, Doanh thu phòng, Room night, Số booking, Giá phòng TB / đêm (ADR) |
 | Sparkline | không | trong thẻ KPI |
 
 Legend nằm trên chart, căn trái, chỉ có màu ↔ tên nhóm. Bấm lát donut hoặc thanh bar = lọc theo nhóm đó (bấm lại để bỏ).
@@ -89,7 +89,7 @@ Chưa có ngưỡng nào sinh cảnh báo.
 
 ## 9 · Icon
 
-33 icon Lucide nhúng sẵn trong `lib/icons.ts`, không cài gì thêm, không vẽ path theo trí nhớ, không emoji. Icon riêng của dashboard này: KPI Doanh thu booking → `coins` · KPI Doanh thu phòng → `trending-up` · KPI Room night → `clock` · KPI Số phòng → `layout-dashboard` · KPI Giá phòng TB / đêm (ADR) → `gauge` · trang kênh OTA → `chart-pie` · trang loại phòng → `layout-dashboard`.
+33 icon Lucide nhúng sẵn trong `lib/icons.ts`, không cài gì thêm, không vẽ path theo trí nhớ, không emoji. Icon riêng của dashboard này: KPI Doanh thu booking → `coins` · KPI Doanh thu phòng → `trending-up` · KPI Room night → `clock` · KPI Số booking → `circle-check` · KPI Giá phòng TB / đêm (ADR) → `gauge` · trang kênh OTA → `chart-pie` · trang loại phòng → `layout-dashboard`.
 
 ## Giả định cần bạn xác nhận
 

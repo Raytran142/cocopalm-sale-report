@@ -67,8 +67,15 @@
       "name": "room_amount",
       "label": "Số phòng",
       "type": "number",
+      "role": "IGNORE"
+    },
+    {
+      "name": "booking_count",
+      "label": "Số booking",
+      "type": "number",
       "role": "METRIC",
-      "format": "int"
+      "format": "int",
+      "countDistinct": "unique_id"
     },
     {
       "name": "ota_source",
@@ -112,7 +119,8 @@
       "label": "Doanh thu booking",
       "type": "number",
       "role": "METRIC",
-      "format": "money"
+      "format": "money",
+      "onePerEntity": "unique_id"
     },
     {
       "name": "currency",
@@ -190,12 +198,12 @@
       "icon": "clock"
     },
     {
-      "key": "room_amount",
-      "label": "Số phòng",
-      "col": "room_amount",
+      "key": "booking_count",
+      "label": "Số booking",
+      "col": "booking_count",
       "format": "int",
       "better": "higher",
-      "icon": "layout-dashboard"
+      "icon": "circle-check"
     },
     {
       "key": "adr",
@@ -215,7 +223,7 @@
     "booking_total",
     "room_total",
     "room_night",
-    "room_amount",
+    "booking_count",
     "adr"
   ],
   "params": [
@@ -230,14 +238,14 @@
     "booking_total",
     "room_total",
     "room_night",
-    "room_amount",
+    "booking_count",
     "adr"
   ],
   "tableMetrics": [
     "booking_total",
     "room_total",
     "room_night",
-    "room_amount",
+    "booking_count",
     "adr"
   ],
   "pages": {
@@ -292,12 +300,11 @@
     "notes": [
       "Ngày trên dashboard là ngày đặt (created_date), không phải ngày check-in.",
       "Tổng mặc định gồm cả booking trạng thái cancelled và modified; dùng bộ lọc Trạng thái để chỉ xem booking new.",
-      "Sheet có 2.268 dòng nhưng chỉ 1.938 mã booking (unique_id): một booking có thể xuất hiện nhiều dòng (bản new / modified / cancelled), cộng dồn có thể bị tính trùng."
+      "Mỗi dòng của sheet là một phòng của booking; booking nhiều phòng có nhiều dòng cùng unique_id. Doanh thu booking chỉ tính một lần cho mỗi booking; Số booking đếm unique_id. Booking huỷ có booking_total = 0 nhưng vẫn giữ room_total, nên Doanh thu phòng và ADR gồm cả booking huỷ trừ khi lọc Trạng thái."
     ],
     "later": [
       "Đăng nhập bằng Google và giới hạn người được xem.",
-      "Đưa lên Internet để cả đội mở bằng trình duyệt.",
-      "Khử trùng lặp theo unique_id (giữ bản ghi mới nhất) trước khi cộng số liệu."
+      "Đưa lên Internet để cả đội mở bằng trình duyệt."
     ]
   },
   "assumptions": [
@@ -335,6 +342,20 @@
       "decision": "room_amount đổi format money → int, nhãn 'Số phòng'; room_total, booking_total đổi int → money (VND).",
       "why": "room_amount có trung vị 1, max 8 (số phòng mỗi booking); hai cột doanh thu có trung vị 1.916.460 và 2.090.000 VND.",
       "fix": "dashboard.json › columns, metrics (format)"
+    },
+    {
+      "level": "Cao",
+      "doc": "spec",
+      "decision": "KPI Số phòng (SUM room_amount) thay bằng Số booking = số unique_id khác nhau, qua cột suy ra booking_count (countDistinct: unique_id).",
+      "why": "Mỗi dòng là một phòng của booking; booking nhiều phòng có nhiều dòng cùng unique_id (2.283 dòng / 1.953 booking).",
+      "fix": "dashboard.json › columns[booking_count], metrics[booking_count], kpis"
+    },
+    {
+      "level": "Cao",
+      "doc": "spec",
+      "decision": "booking_total chỉ tính một lần cho mỗi unique_id (dòng đầu của booking), các dòng phòng sau = 0 (onePerEntity: unique_id).",
+      "why": "booking_total lặp nguyên giá trị trên mọi dòng của booking nhiều phòng (222 booking), cộng theo dòng làm Doanh thu booking bị đếm trùng ~2,12 tỷ.",
+      "fix": "dashboard.json › columns[booking_total].onePerEntity"
     }
   ],
   "reference": {
@@ -352,17 +373,17 @@
       "room_type_name": 3
     },
     "kpisDefault": {
-      "booking_total": 652541211,
+      "booking_total": 429673227,
       "room_total": 428219727,
       "room_night": 483,
-      "room_amount": 215,
+      "booking_count": 122,
       "adr": 886583.2857142857
     },
     "kpisAll": {
-      "booking_total": 7658471037,
+      "booking_total": 5538687278,
       "room_total": 6169293833,
       "room_night": 7448,
-      "room_amount": 3206,
+      "booking_count": 1939,
       "adr": 828315.4985230934
     }
   },

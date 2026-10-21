@@ -66,8 +66,15 @@
       "name": "room_amount",
       "label": "Số phòng",
       "type": "number",
+      "role": "IGNORE"
+    },
+    {
+      "name": "booking_count",
+      "label": "Số booking",
+      "type": "number",
       "role": "METRIC",
-      "format": "int"
+      "format": "int",
+      "countDistinct": "unique_id"
     },
     {
       "name": "ota_source",
@@ -111,7 +118,8 @@
       "label": "Doanh thu booking",
       "type": "number",
       "role": "METRIC",
-      "format": "money"
+      "format": "money",
+      "onePerEntity": "unique_id"
     },
     {
       "name": "currency",
@@ -189,12 +197,12 @@
       "icon": "clock"
     },
     {
-      "key": "room_amount",
-      "label": "Số phòng",
-      "col": "room_amount",
+      "key": "booking_count",
+      "label": "Số booking",
+      "col": "booking_count",
       "format": "int",
       "better": "higher",
-      "icon": "layout-dashboard"
+      "icon": "circle-check"
     },
     {
       "key": "adr",
@@ -214,7 +222,7 @@
     "booking_total",
     "room_total",
     "room_night",
-    "room_amount",
+    "booking_count",
     "adr"
   ],
   "params": [
@@ -229,14 +237,14 @@
     "booking_total",
     "room_total",
     "room_night",
-    "room_amount",
+    "booking_count",
     "adr"
   ],
   "tableMetrics": [
     "booking_total",
     "room_total",
     "room_night",
-    "room_amount",
+    "booking_count",
     "adr"
   ],
   "pages": {
