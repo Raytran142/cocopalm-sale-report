@@ -1,5 +1,5 @@
 /* Trang 1 · Tổng quan — đúng 4 chart, chia 30/70 (Row 2) và 40/60 (Row 3). */
-import { GRAIN_VI, agg, byGrain, group, sortBy } from '@/lib/aggregate';
+import { GRAIN_VI, agg, byGrain, group, sortBy, valueOf } from '@/lib/aggregate';
 import { CFG, PRIMARY, SECONDARY, isAdditive, labelOf, lower, metric, thresholdsOf } from '@/lib/config';
 import { fmt, pct } from '@/lib/format';
 import { LGD2, seriesColor, type Layout } from '@/lib/tokens';
@@ -12,7 +12,7 @@ import { TrendChart } from '../charts/TrendChart';
 
 export const short = (s: string, n: number): string => (s.length > n ? s.slice(0, n - 1) + '…' : s);
 
-export function OverviewPage({ rows, L, param, grain, onGrain, trend, onTrend, from, onToggle }: {
+export function OverviewPage({ rows, L, param, grain, onGrain, trend, onTrend, span, from, onToggle }: {
   rows: Row[];
   L: Layout;
   param: string;
@@ -20,6 +20,7 @@ export function OverviewPage({ rows, L, param, grain, onGrain, trend, onTrend, f
   onGrain: (g: Grain) => void;
   trend: Trend;
   onTrend: (t: Trend) => void;
+  span: { from: number; to: number }; // khoảng ngày đang lọc: chart theo kỳ có đủ mọi kỳ, kỳ trống = 0
   from: string;
   onToggle: (dim: string, key: string) => void;
 }) {
@@ -33,7 +34,7 @@ export function OverviewPage({ rows, L, param, grain, onGrain, trend, onTrend, f
   const total = agg(rows);
   const byPrim = sortBy(group(rows, PRIMARY), dk);
   const bySec = sortBy(group(rows, SECONDARY), param).slice(0, 7);
-  const periods = byGrain(rows, grain, from);
+  const periods = byGrain(rows, grain, from, span);
   const slices = byPrim.map((g, i) => ({
     k: g.k, v: Math.max(0, g.v[dk] ?? 0), lab: fmt(dm.format, g.v[dk] ?? 0), color: seriesColor(g.v, i),
     onClick: () => onToggle(PRIMARY, g.k),
@@ -53,8 +54,8 @@ export function OverviewPage({ rows, L, param, grain, onGrain, trend, onTrend, f
         <ChartCard width={L.b} title={`Xu hướng ${tm.label}`} sub={`Theo ${lower(GRAIN_VI[grain])} · đưa chuột lên chart để xem chi tiết`}
                    right={<Controls><TrendSeg param={param} trend={trend} onTrend={onTrend} /><GrainSeg grain={grain} onGrain={onGrain} /></Controls>}>
           <div className="plot">
-            <TrendChart w={L.p2b.w} h={L.p2b.h} labels={periods.map((x) => x.label)} fmt={ft}
-                        series={[{ name: tm.label, color: 'var(--focus)', area: true, values: periods.map((x) => x.v[tk] ?? 0) }]} />
+            <TrendChart w={L.p2b.w} h={L.p2b.h} labels={periods.map((x) => x.label)} fmt={ft} int={tm.format === 'int'}
+                        series={[{ name: tm.label, color: 'var(--focus)', area: true, values: periods.map((x) => valueOf(x.v, tk)) }]} />
           </div>
         </ChartCard>
       </div>

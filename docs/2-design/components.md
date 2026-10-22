@@ -35,7 +35,7 @@ So kỳ trước = cùng số ngày, ngay trước khoảng đang xem, cùng b�
 | Donut tỷ trọng | 2 hàng (44px) | trang 1, 2, 3 — chỉ vẽ chỉ số cộng được; chỉ số đang chọn là tỷ lệ thì vẽ Doanh thu booking |
 | Area một chuỗi | không | trang 1, xu hướng chỉ số đang chọn hoặc Số booking (nút chuyển ở đầu card) |
 | Line nhiều đường | 1 hàng (24px) | trang 2, 3 — top 5 nhóm (xếp theo chỉ số đang chọn), vẽ chỉ số đang chọn hoặc Số booking |
-| Donut tỷ trọng (trang 3) | 2 hàng (44px) | trang Theo loại phòng có nút chuyển "chỉ số đang chọn / Số booking" riêng của card (không dùng chung với chart xu hướng); tên trong chú thích cắt ở 22 ký tự |
+| Donut tỷ trọng (trang 3) | 2 hàng (44px) | trang Theo loại phòng có nút chuyển "chỉ số đang chọn / Số booking" riêng của card (không dùng chung với chart xu hướng, mặc định Số booking); tên trong chú thích cắt ở 22 ký tự |
 | Bar xếp hạng | không | trang 1 (top loại phòng), trang 2, 3 — tối đa 7 thanh |
 | Bảng theo kỳ tô nhiệt | không | trang 1 — cột: Doanh thu booking, Số booking, Booking huỷ, Room night, Giá phòng TB / đêm (ADR); Booking huỷ pha đỏ (càng đậm càng xấu) |
 | Bảng chỉ số đầy đủ | không | trang 2, 3 — cột: Doanh thu booking, Số booking, Booking huỷ, Room night, Giá phòng TB / đêm (ADR) |
@@ -49,7 +49,7 @@ Legend nằm trên chart, căn trái, chỉ có màu ↔ tên nhóm. Bấm lát 
 
 | Component | Class | Quy tắc |
 |---|---|---|
-| Segmented control | `.seg` | Ngày/Tuần/Tháng ở card có trục thời gian; "chỉ số đang chọn / Số booking" ở 3 chart xu hướng (dùng chung cho cả 3 trang); 4 chỉ số trong drawer |
+| Segmented control | `.seg` | Ngày/Tuần/Tháng ở card có trục thời gian; "chỉ số đang chọn / Số booking" ở 3 chart xu hướng (dùng chung cho cả 3 trang, mặc định Số booking); mặc định kỳ là Ngày; 4 chỉ số trong drawer |
 | Nút header | `.ibtn` · `.ibtn.pri` | chỉ "Bộ lọc" mang `.pri` |
 | Nút trong drawer / bảng xuất | `.dbtn.ghost` · `.dbtn.pri` | nút chính tô mực, không tô brand |
 | Checkbox | `.cbx` + `.box` | tick tô mực: chọn/không chọn không phải tốt/xấu |

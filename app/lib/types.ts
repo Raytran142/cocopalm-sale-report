@@ -33,7 +33,7 @@ export type DataErr = { error: string; hint?: string };
 
 export type Agg = Record<string, number>;
 export type Group = { k: string; n: number; v: Agg };
-export type Period = { k: number | string; label: string; v: Agg };
+export type Period = { k: number | string; label: string; n?: number; v: Agg }; // n = số dòng trong kỳ
 
 export type Grain = 'day' | 'week' | 'month';
 export type Trend = 'param' | 'count'; // chart xu hướng vẽ chỉ số đang chọn hay chỉ số đếm (Số booking)

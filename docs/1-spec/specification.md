@@ -262,3 +262,9 @@ Dashboard theo dõi cho biết *cái gì đang xảy ra*, không cho biết *vì
 - **G36 · Vừa** — (2026-10-22, sửa tay) Tab Theo loại phòng: donut tỷ trọng có nút chuyển giữa chỉ số đang chọn và Số booking (riêng của card).  
   Vì: Yêu cầu xem tỷ trọng số booking theo loại phòng.  
   Nếu sai: app/components/pages/DimPage.tsx › shareMode
+- **G37 · Cao** — (2026-10-22, sửa tay) Chart và bảng theo kỳ (xu hướng 3 trang, sparkline KPI, bảng Hiệu quả theo kỳ) có **đủ mọi ngày / tuần / tháng** trong khoảng đang lọc; kỳ không có booking = 0. Tỷ lệ (ADR) ở kỳ trống là không xác định: chart ngắt đoạn, bảng ghi "—", sparkline giữ giá trị gần nhất. Chỉ số đếm có mốc trục Y là số nguyên.  
+  Vì: Trước đây kỳ không có dữ liệu bị bỏ khỏi trục, đường line nối thẳng qua và không bao giờ về 0; trục Y của số booking làm tròn ra "0 · 1 · 1 · 2". Đường chuẩn "trung bình kỳ" của sparkline giờ tính trên mọi ngày nên thấp hơn trước.  
+  Nếu sai: app/lib/aggregate.ts › byGrain(span), valueOf; app/components/charts/TrendChart.tsx › int
+- **G38 · Vừa** — (2026-10-22, sửa tay) Mặc định khi mở dashboard: chart xu hướng (3 trang) và donut tỷ trọng ở tab Theo loại phòng vẽ **Số booking**; kỳ mặc định là **Ngày** (áp cho cả bảng Hiệu quả theo kỳ). Người xem vẫn chuyển sang Doanh thu / Tuần / Tháng được.  
+  Vì: Người dùng muốn theo dõi số lượt đặt phòng hằng ngày trước tiên.  
+  Nếu sai: app/app/dashboard/page.tsx › useState của grain, trend, shareMode

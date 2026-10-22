@@ -1,5 +1,6 @@
 /* Hai bảng viết tay bằng <table>: bảng theo kỳ tô nhiệt (trang Tổng quan) và bảng chỉ số đầy đủ theo nhóm.
    Bảng cuộn TRONG khối .tscroll, không làm cuộn cả trang. */
+import { valueOf } from '@/lib/aggregate';
 import { iconOf, meets, metric, thresholdsOf } from '@/lib/config';
 import { fmt } from '@/lib/format';
 import type { Agg, Group, Period } from '@/lib/types';
@@ -9,13 +10,14 @@ import { Icon } from '../Icon';
    Chỉ số chi phí đơn vị (có ngưỡng unit_cost, ví dụ CPL) pha bằng --bad: càng đậm càng xấu. */
 export function PeriodTable({ periods, total, keys }: { periods: Period[]; total: Agg; keys: string[] }) {
   if (!periods.length) return <div className="cs">Không có dữ liệu</div>;
+  // Kỳ trống: chỉ số cộng = 0 (vẫn tô nhiệt), tỷ lệ không xác định = "—" (không tô, không tính vào thang).
   const range = Object.fromEntries(keys.map((k) => {
-    const v = periods.map((p) => p.v[k] ?? 0);
-    return [k, [Math.min(...v), Math.max(...v)] as const];
+    const v = periods.map((p) => valueOf(p.v, k)).filter((x): x is number => x !== null);
+    return [k, v.length ? [Math.min(...v), Math.max(...v)] as const : [0, 0] as const];
   }));
-  const heat = (k: string, v: number) => {
+  const heat = (k: string, v: number | null) => {
     const [mn, mx] = range[k];
-    if (mx === mn) return undefined;
+    if (v === null || mx === mn) return undefined;
     const p = (5 + ((v - mn) / (mx - mn)) * 24).toFixed(0);
     // chỉ số nghịch (chi phí đơn vị, Booking huỷ…) pha --bad: ô càng đậm càng xấu
     const ink = thresholdsOf(k).some((t) => t.kind === 'unit_cost') || metric(k).better === 'lower' ? '--bad' : '--focus';
@@ -30,7 +32,7 @@ export function PeriodTable({ periods, total, keys }: { periods: Period[]; total
             <tr key={String(p.k)}>
               <td>{p.label}</td>
               {keys.map((k) => (
-                <td key={k}><span className="heat" style={heat(k, p.v[k] ?? 0)}>{fmt(metric(k).format, p.v[k] ?? 0)}</span></td>
+                <HeatCell key={k} k={k} x={valueOf(p.v, k)} heat={heat} />
               ))}
             </tr>
           ))}
@@ -39,6 +41,10 @@ export function PeriodTable({ periods, total, keys }: { periods: Period[]; total
       </table>
     </div>
   );
+}
+
+function HeatCell({ k, x, heat }: { k: string; x: number | null; heat: (k: string, v: number | null) => object | undefined }) {
+  return <td><span className="heat" style={heat(k, x)}>{x === null ? '—' : fmt(metric(k).format, x)}</span></td>;
 }
 
 export function DimName({ dim, value }: { dim: string; value: string }) {

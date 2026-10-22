@@ -33,3 +33,8 @@
 - `room_total` IGNORE; không còn "Doanh thu phòng". ADR = booking_total / room_night; mục tiêu ADR p75 tính theo từng booking (server gộp dòng theo unique_id, mã không gửi xuống trình duyệt).
 - "Booking huỷ" = countDistinct unique_id + `countWhen: status = cancelled`; KPI 5 ô: Doanh thu booking · Số booking · Booking huỷ · Room night · ADR. Jade, JM Beach chưa có dòng cancelled.
 - Tab Theo loại phòng: donut tỷ trọng có nút Doanh thu / Số booking riêng (`shareMode`).
+
+## 2026-10-22 · Kỳ trống trên chart
+
+- `byGrain(rows, grain, from, span)` điền đủ mọi kỳ trong khoảng lọc (kỳ trống = 0); `valueOf()` trả null cho tỷ lệ có mẫu số 0 (ADR) ⇒ chart ngắt đoạn, bảng "—". TrendChart `int` cho mốc trục Y nguyên. Trang "Theo thời gian" vốn đã điền đủ tháng.
+- Tab mới: Aqua Vista (tự nhận, có dòng cancelled).

@@ -1,7 +1,7 @@
 /* Băng 5 thẻ KPI (118px). Mỗi thẻ: nhãn · số lớn + so kỳ trước · sparkline có đường chuẩn · chân ghi ngưỡng.
    Chỉ KPI có ngưỡng mới được tô xanh/đỏ. Chỉ số nghịch (better: lower) tăng là xấu ⇒ mũi tên đảo màu. */
 import type { ReactNode } from 'react';
-import { agg, byGrain } from '@/lib/aggregate';
+import { agg, byGrain, valueOf } from '@/lib/aggregate';
 import { CFG, meets, metric, thresholdsOf } from '@/lib/config';
 import { fmt, pct } from '@/lib/format';
 import type { IconName } from '@/lib/icons';
@@ -27,7 +27,8 @@ function KpiCard({ k, i, a, p, days, w }: { k: string; i: number; a: Agg; p: Agg
 
   const ths = thresholdsOf(k);
   const t = ths.find((x) => x.kind === 'target') ?? ths.find((x) => x.kind === 'unit_cost') ?? ths.find((x) => x.kind === 'loss');
-  const values = days.map((d) => d.v[k] ?? 0);
+  const values = days.map((d) => valueOf(d.v, k)); // ngày trống: 0 với chỉ số cộng, null với tỷ lệ
+  const known = values.filter((x): x is number => x !== null);
   let hit: boolean | null = null;
   let note: string;
   let base: number | null;
@@ -44,7 +45,7 @@ function KpiCard({ k, i, a, p, days, w }: { k: string; i: number; a: Agg; p: Agg
       note = `hoà vốn ${f(t.value)}` + (hit ? '' : ' · đang lỗ');
     }
   } else {
-    base = values.length ? values.reduce((s, x) => s + x, 0) / values.length : null;
+    base = known.length ? known.reduce((s, x) => s + x, 0) / known.length : null; // trung bình mọi ngày trong kỳ, kể cả ngày 0
     note = `so với ${f(pv)} kỳ trước`;
   }
   const color = hit === null ? (k === CFG.defaultParam ? 'var(--focus)' : 'var(--series-2)') : hit ? 'var(--ok)' : 'var(--bad)';
@@ -61,9 +62,12 @@ function KpiCard({ k, i, a, p, days, w }: { k: string; i: number; a: Agg; p: Agg
   );
 }
 
-export function KpiBand({ rows, prev, kpiW, from }: { rows: Row[]; prev: Row[]; kpiW: number; from: string }) {
+export function KpiBand({ rows, prev, kpiW, from, span }: {
+  rows: Row[]; prev: Row[]; kpiW: number; from: string;
+  span?: { from: number; to: number }; // khoảng ngày đang lọc: sparkline có đủ mọi ngày, ngày trống = 0
+}) {
   const a = agg(rows), p = agg(prev);
-  const days = byGrain(rows, 'day', from);
+  const days = byGrain(rows, 'day', from, span);
   return (
     <div id="kpis">
       {CFG.kpis.map((k, i) => <KpiCard key={k} k={k} i={i} a={a} p={p} days={days} w={kpiW - 28} />)}

@@ -1,6 +1,6 @@
 /* Trang 2 và 3 · Theo một dimension — cùng bố cục, đổi dimension.
    Màu của một nhóm = hạng của nó theo chỉ số đang chọn, giữ nguyên trên cả 4 chart của trang. */
-import { GRAIN_VI, agg, byGrain, group, sortBy } from '@/lib/aggregate';
+import { GRAIN_VI, agg, byGrain, group, sortBy, valueOf } from '@/lib/aggregate';
 import { CFG, PRIMARY, isAdditive, labelOf, lower, metric } from '@/lib/config';
 import { fmt, pct } from '@/lib/format';
 import { LGD1, LGD2, seriesColor, type Layout } from '@/lib/tokens';
@@ -12,7 +12,7 @@ import { DimTable } from '../charts/Tables';
 import { TrendChart } from '../charts/TrendChart';
 import { short } from './OverviewPage';
 
-export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, shareMode, onShareMode, from, onToggle }: {
+export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, span, shareMode, onShareMode, from, onToggle }: {
   rows: Row[];
   L: Layout;
   dim: string;
@@ -21,6 +21,7 @@ export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, s
   onGrain: (g: Grain) => void;
   trend: Trend;
   onTrend: (t: Trend) => void;
+  span: { from: number; to: number }; // khoảng ngày đang lọc: chart theo kỳ có đủ mọi kỳ, kỳ trống = 0
   /** Có thì card tỷ trọng có nút chuyển chỉ số / Số booking (tab Theo loại phòng). */
   shareMode?: Trend;
   onShareMode?: (t: Trend) => void;
@@ -42,10 +43,10 @@ export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, s
   const dk = shareMode ? trendKey(base, shareMode) : base;
   const dm = metric(dk);
   const slices = sortBy([...G], dk).slice(0, 6);
-  const periods = byGrain(rows, grain, from);
+  const periods = byGrain(rows, grain, from, span);
   const lines = top.map((g) => {
-    const m = new Map(byGrain(rows.filter((r) => r.d[dim] === g.k), grain, from).map((x) => [x.k, x.v[tk] ?? 0]));
-    return { name: g.k, color: colorOf(g), width: 2, values: periods.map((x) => m.get(x.k) ?? 0) };
+    const m = new Map(byGrain(rows.filter((r) => r.d[dim] === g.k), grain, from, span).map((x) => [x.k, valueOf(x.v, tk)]));
+    return { name: g.k, color: colorOf(g), width: 2, values: periods.map((x) => m.get(x.k) ?? null) };
   });
 
   return (
@@ -64,7 +65,7 @@ export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, s
                    right={<Controls><TrendSeg param={param} trend={trend} onTrend={onTrend} /><GrainSeg grain={grain} onGrain={onGrain} /></Controls>}
                    legend={<Legend items={lines.map((l) => ({ name: l.name, color: l.color }))} />}>
           <div className="plot">
-            <TrendChart w={L.p2b.w} h={L.p2b.h - LGD1} labels={periods.map((x) => x.label)} series={lines} fmt={ft} />
+            <TrendChart w={L.p2b.w} h={L.p2b.h - LGD1} labels={periods.map((x) => x.label)} series={lines} fmt={ft} int={tm.format === 'int'} />
           </div>
         </ChartCard>
       </div>

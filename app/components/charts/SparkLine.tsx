@@ -2,8 +2,13 @@
    mà còn cho biết đang trên hay dưới mốc. Mốc = ngưỡng nghiệp vụ nếu có, còn lại là trung bình kỳ. */
 import { useId } from 'react';
 
-export function SparkLine({ w, h, values, color, base }: { w: number; h: number; values: number[]; color: string; base: number | null }) {
+export function SparkLine({ w, h, values: raw, color, base }: { w: number; h: number; values: (number | null)[]; color: string; base: number | null }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
+  // Ngày không xác định (tỷ lệ có mẫu số 0) mang giá trị của ngày gần nhất trước nó: sparkline chỉ cần hình dáng,
+  // không ngắt đoạn ở kích thước 34px. Đầu chuỗi chưa có ngày nào xác định thì bỏ qua.
+  const values: number[] = [];
+  let prev: number | null = null;
+  for (const v of raw) { if (v !== null) prev = v; if (prev !== null) values.push(prev); }
   if (!values.length) return <svg width={w} height={h} />;
   const all = base == null ? values : values.concat([base]);
   const mx = Math.max(...all), mn = Math.min(...all), sp = mx - mn || 1, pad = 4;

@@ -31,9 +31,9 @@ export default function DashboardPage() {
   const [syncing, setSyncing] = useState(false);
   const [filters, setFilters] = useState<Filters>(() => defaultFilters(0));
   const [page, setPage] = useState<PageId>('home');
-  const [grain, setGrain] = useState<Grain>('week');
-  const [trend, setTrend] = useState<Trend>('param'); // chart xu hướng: chỉ số đang chọn hay Số booking — dùng chung 3 trang
-  const [shareMode, setShareMode] = useState<Trend>('param'); // donut tỷ trọng ở tab Theo loại phòng: chỉ số đang chọn hay Số booking
+  const [grain, setGrain] = useState<Grain>('day'); // mặc định theo ngày (dùng chung chart xu hướng và bảng theo kỳ)
+  const [trend, setTrend] = useState<Trend>('count'); // chart xu hướng: Số booking (mặc định) hay chỉ số đang chọn — dùng chung 3 trang
+  const [shareMode, setShareMode] = useState<Trend>('count'); // donut tỷ trọng ở tab Theo loại phòng: Số booking (mặc định) hay chỉ số đang chọn
   const [rail, setRail] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [drawer, setDrawer] = useState(false);
@@ -110,6 +110,7 @@ export default function DashboardPage() {
   const days = meta?.days ?? 0;
   const from = meta?.from ?? '2000-01-01';
   const isTime = page === 'time';
+  const span = useMemo(() => ({ from: filters.from, to: filters.to }), [filters.from, filters.to]); // khoảng t đang lọc: chart theo kỳ điền đủ mọi kỳ
   const dimRows = useMemo(() => applyDims(rows, filters), [rows, filters]);
   const ms = useMemo(() => (meta ? months(dimRows, meta.from, meta.to) : []), [dimRows, meta]);
   const sel = month && ms.some((m) => m.k === month) ? month : defaultMonth(ms);
@@ -180,10 +181,10 @@ export default function DashboardPage() {
       </>
     );
   } else {
-    const common = { rows: filtered, L, param: filters.param, grain, onGrain: setGrain, trend, onTrend: setTrend, from, onToggle };
+    const common = { rows: filtered, L, param: filters.param, grain, onGrain: setGrain, trend, onTrend: setTrend, span, from, onToggle };
     body = (
       <>
-        <KpiBand rows={filtered} prev={prev} kpiW={L.kpiW} from={from} />
+        <KpiBand rows={filtered} prev={prev} kpiW={L.kpiW} from={from} span={span} />
         {page === 'home' && <OverviewPage {...common} />}
         {page === 'primary' && <DimPage {...common} dim={PRIMARY} />}
         {page === 'secondary' && <DimPage {...common} dim={SECONDARY} shareMode={shareMode} onShareMode={setShareMode} />}

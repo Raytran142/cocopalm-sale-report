@@ -71,18 +71,26 @@ export const sortBy = (gs: Group[], key: string): Group[] => gs.sort((a, b) => (
 
 export const GRAIN_VI: Record<Grain, string> = { day: 'Ngày', week: 'Tuần', month: 'Tháng' };
 
-/* Gom theo kỳ. Tuần tính từ ngày đầu của dữ liệu (k = floor(t/7)), nhãn là ngày đầu tuần. */
-export function byGrain(rows: Row[], grain: Grain, from: string): Period[] {
-  const keyOf = (r: Row): number | string =>
-    grain === 'day' ? r.t : grain === 'week' ? Math.floor(r.t / 7) : r.date.slice(0, 7);
+/* Gom theo kỳ. Tuần tính từ ngày đầu của dữ liệu (k = floor(t/7)), nhãn là ngày đầu tuần.
+   span (khoảng t của bộ lọc): có thì trả về MỌI kỳ trong khoảng, kỳ không có dòng nào vẫn có mặt với n = 0
+   (chỉ số cộng = 0, tỷ lệ không xác định — xem valueOf). Không có span thì chỉ các kỳ có dữ liệu. */
+export function byGrain(rows: Row[], grain: Grain, from: string, span?: { from: number; to: number }): Period[] {
+  const keyOf = (t: number, date: string): number | string =>
+    grain === 'day' ? t : grain === 'week' ? Math.floor(t / 7) : date.slice(0, 7);
   const m = new Map<number | string, Row[]>();
+  if (span) {
+    for (let t = span.from; t <= span.to; t++) {
+      const k = keyOf(t, isoAt(from, t));
+      if (!m.has(k)) m.set(k, []);
+    }
+  }
   for (const r of rows) {
-    const k = keyOf(r);
+    const k = keyOf(r.t, r.date);
     let a = m.get(k);
     if (!a) m.set(k, (a = []));
     a.push(r);
   }
-  const years = new Set(rows.map((r) => r.date.slice(0, 4))).size;
+  const years = new Set([...m.keys()].map((k) => (grain === 'month' ? String(k) : isoAt(from, grain === 'week' ? (k as number) * 7 : (k as number))).slice(0, 4))).size;
   const label = (k: number | string): string => {
     if (grain === 'day') return ddmm(isoAt(from, k as number));
     if (grain === 'week') return ddmm(isoAt(from, (k as number) * 7));
@@ -91,7 +99,15 @@ export function byGrain(rows: Row[], grain: Grain, from: string): Period[] {
   };
   return [...m]
     .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
-    .map(([k, rs]) => ({ k, label: label(k), v: agg(rs) }));
+    .map(([k, rs]) => ({ k, label: label(k), n: rs.length, v: agg(rs) }));
+}
+
+/* Giá trị chỉ số để VẼ: tỷ lệ có mẫu số 0 (vd. ADR của ngày không có room night) là null — không xác định,
+   không phải 0. Chart ngắt đoạn, bảng ghi "—". Chỉ số cộng được trả về số (0 khi trống). */
+export function valueOf(v: Agg, key: string): number | null {
+  const m = METRICS[key];
+  if (m?.den?.length && m.den.reduce((s, t) => s + term(v, t), 0) === 0) return null;
+  return v[key] ?? 0;
 }
 
 /* ── Bộ lọc ─────────────────────────────────────────────────────────────── */
