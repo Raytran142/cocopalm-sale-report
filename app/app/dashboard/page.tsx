@@ -19,7 +19,7 @@ import { ALERT_DIM, FILTER_DIM, PRIMARY, SECONDARY, appName, applyTargets, label
 import { alertTotal, alerts as alertsOf, applyDims, applyFilters, defaultFilters, filterCount, prevRows, type Alert } from '@/lib/aggregate';
 import { clockOf, ddmm, isoAt, vi } from '@/lib/format';
 import { SIDE_RAIL, SIDE_WIDE, layout } from '@/lib/tokens';
-import type { DataErr, DataOk, Filters, Grain, Meta, PageId, Row, Trend } from '@/lib/types';
+import type { DataErr, DataOk, Filters, Grain, Meta, PageId, Row, TableMode, Trend } from '@/lib/types';
 
 type Load = 'loading' | 'error' | 'ready';
 
@@ -33,7 +33,8 @@ export default function DashboardPage() {
   const [page, setPage] = useState<PageId>('home');
   const [grain, setGrain] = useState<Grain>('day'); // mặc định theo ngày (dùng chung chart xu hướng và bảng theo kỳ)
   const [trend, setTrend] = useState<Trend>('count'); // chart xu hướng: Số booking (mặc định) hay chỉ số đang chọn — dùng chung 3 trang
-  const [shareMode, setShareMode] = useState<Trend>('count'); // donut tỷ trọng ở tab Theo loại phòng: Số booking (mặc định) hay chỉ số đang chọn
+  const [shareMode, setShareMode] = useState<Trend>('count'); // donut tỷ trọng ở tab Theo kênh OTA và Theo loại phòng: Số booking (mặc định) hay chỉ số đang chọn — dùng chung
+  const [tableMode, setTableMode] = useState<TableMode>('group'); // bảng chỉ số đầy đủ (tab kênh OTA, loại phòng): theo nhóm hay theo kỳ — dùng chung
   const [rail, setRail] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [drawer, setDrawer] = useState(false);
@@ -186,8 +187,8 @@ export default function DashboardPage() {
       <>
         <KpiBand rows={filtered} prev={prev} kpiW={L.kpiW} from={from} span={span} />
         {page === 'home' && <OverviewPage {...common} />}
-        {page === 'primary' && <DimPage {...common} dim={PRIMARY} />}
-        {page === 'secondary' && <DimPage {...common} dim={SECONDARY} shareMode={shareMode} onShareMode={setShareMode} />}
+        {page === 'primary' && <DimPage {...common} dim={PRIMARY} shareMode={shareMode} onShareMode={setShareMode} tableMode={tableMode} onTableMode={setTableMode} />}
+        {page === 'secondary' && <DimPage {...common} dim={SECONDARY} shareMode={shareMode} onShareMode={setShareMode} tableMode={tableMode} onTableMode={setTableMode} />}
       </>
     );
   }

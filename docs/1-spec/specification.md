@@ -268,3 +268,9 @@ Dashboard theo dõi cho biết *cái gì đang xảy ra*, không cho biết *vì
 - **G38 · Vừa** — (2026-10-22, sửa tay) Mặc định khi mở dashboard: chart xu hướng (3 trang) và donut tỷ trọng ở tab Theo loại phòng vẽ **Số booking**; kỳ mặc định là **Ngày** (áp cho cả bảng Hiệu quả theo kỳ). Người xem vẫn chuyển sang Doanh thu / Tuần / Tháng được.  
   Vì: Người dùng muốn theo dõi số lượt đặt phòng hằng ngày trước tiên.  
   Nếu sai: app/app/dashboard/page.tsx › useState của grain, trend, shareMode
+- **G39 · Vừa** — (2026-10-22, sửa tay) Bảng chỉ số đầy đủ ở tab Theo kênh OTA và Theo loại phòng có nút chuyển "<nhóm> / <kỳ>": mặc định mỗi nhóm một dòng; chuyển sang kỳ thì mỗi ngày (hoặc tuần / tháng theo nút kỳ của chart xu hướng) một dòng, tính trên các dòng đang lọc. Lựa chọn dùng chung cho hai tab.  
+  Vì: Người dùng cần xem chi tiết từng ngày của một kênh / loại phòng đã lọc mà không mất bảng so sánh giữa các nhóm.  
+  Nếu sai: app/components/pages/DimPage.tsx › tableMode
+- **G40 · Vừa** — (2026-10-22, sửa tay) Nút chuyển "chỉ số đang chọn / Số booking" của donut tỷ trọng (G36) áp dụng cho cả tab Theo kênh OTA; lựa chọn dùng chung hai tab, mặc định Số booking.  
+  Vì: Người dùng muốn xem tỷ trọng số booking theo kênh như theo loại phòng.  
+  Nếu sai: app/app/dashboard/page.tsx › shareMode

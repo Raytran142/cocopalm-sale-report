@@ -4,15 +4,15 @@ import { GRAIN_VI, agg, byGrain, group, sortBy, valueOf } from '@/lib/aggregate'
 import { CFG, PRIMARY, isAdditive, labelOf, lower, metric } from '@/lib/config';
 import { fmt, pct } from '@/lib/format';
 import { LGD1, LGD2, seriesColor, type Layout } from '@/lib/tokens';
-import type { Grain, Group, Row, Trend } from '@/lib/types';
-import { ChartCard, Controls, GrainSeg, Legend, TrendSeg, trendKey } from '../ChartCard';
+import type { Grain, Group, Row, TableMode, Trend } from '@/lib/types';
+import { ChartCard, Controls, GrainSeg, Legend, MetricSeg, TrendSeg, trendKey } from '../ChartCard';
 import { DonutChart } from '../charts/DonutChart';
 import { RankBars } from '../charts/RankBars';
-import { DimTable } from '../charts/Tables';
+import { DimTable, PeriodTable } from '../charts/Tables';
 import { TrendChart } from '../charts/TrendChart';
 import { short } from './OverviewPage';
 
-export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, span, shareMode, onShareMode, from, onToggle }: {
+export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, span, shareMode, onShareMode, tableMode, onTableMode, from, onToggle }: {
   rows: Row[];
   L: Layout;
   dim: string;
@@ -22,9 +22,12 @@ export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, s
   trend: Trend;
   onTrend: (t: Trend) => void;
   span: { from: number; to: number }; // khoảng ngày đang lọc: chart theo kỳ có đủ mọi kỳ, kỳ trống = 0
-  /** Có thì card tỷ trọng có nút chuyển chỉ số / Số booking (tab Theo loại phòng). */
+  /** Có thì card tỷ trọng có nút chuyển chỉ số / Số booking (tab Theo kênh OTA, Theo loại phòng). */
   shareMode?: Trend;
   onShareMode?: (t: Trend) => void;
+  /** Bảng góc phải: 'group' = mỗi nhóm một dòng, 'period' = mỗi ngày / tuần / tháng một dòng (theo nút kỳ). */
+  tableMode: TableMode;
+  onTableMode: (m: TableMode) => void;
   from: string;
   onToggle: (dim: string, key: string) => void;
 }) {
@@ -82,8 +85,16 @@ export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, s
                         center={[slices.length ? pct((slices[0].v[dk] ?? 0) / (total[dk] || 1), 0) : '—', slices[0] ? short(slices[0].k, 18) : '']} />
           </div>
         </ChartCard>
-        <ChartCard width={L.d} title="Bảng chỉ số đầy đủ" sub={`Sắp theo ${p.label}`}>
-          <DimTable dim={dim} dimLabel={labelOf(dim)} groups={G} total={total} keys={CFG.tableMetrics} />
+        <ChartCard width={L.d}
+                   title={tableMode === 'period' ? `Chi tiết theo ${lower(GRAIN_VI[grain])}` : 'Bảng chỉ số đầy đủ'}
+                   sub={tableMode === 'period'
+                     ? `${G.length === 1 ? G[0].k : `${G.length} ${dl}`} · kỳ trống = 0 · đổi kỳ ở chart bên trên`
+                     : `Sắp theo ${p.label}`}
+                   right={<MetricSeg value={tableMode} onChange={(k) => onTableMode(k as TableMode)}
+                                     options={[{ k: 'group', label: labelOf(dim) }, { k: 'period', label: GRAIN_VI[grain] }]} />}>
+          {tableMode === 'period'
+            ? <PeriodTable periods={periods} total={total} keys={CFG.tableMetrics} />
+            : <DimTable dim={dim} dimLabel={labelOf(dim)} groups={G} total={total} keys={CFG.tableMetrics} />}
         </ChartCard>
       </div>
     </>
