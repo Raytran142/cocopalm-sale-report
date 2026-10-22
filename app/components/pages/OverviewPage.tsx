@@ -3,8 +3,8 @@ import { GRAIN_VI, agg, byGrain, group, sortBy } from '@/lib/aggregate';
 import { CFG, PRIMARY, SECONDARY, isAdditive, labelOf, lower, metric, thresholdsOf } from '@/lib/config';
 import { fmt, pct } from '@/lib/format';
 import { LGD2, seriesColor, type Layout } from '@/lib/tokens';
-import type { Grain, Row } from '@/lib/types';
-import { ChartCard, GrainSeg, Legend } from '../ChartCard';
+import type { Grain, Row, Trend } from '@/lib/types';
+import { ChartCard, Controls, GrainSeg, Legend, TrendSeg, trendKey } from '../ChartCard';
 import { DonutChart } from '../charts/DonutChart';
 import { RankBars } from '../charts/RankBars';
 import { PeriodTable } from '../charts/Tables';
@@ -12,17 +12,22 @@ import { TrendChart } from '../charts/TrendChart';
 
 export const short = (s: string, n: number): string => (s.length > n ? s.slice(0, n - 1) + '…' : s);
 
-export function OverviewPage({ rows, L, param, grain, onGrain, from, onToggle }: {
+export function OverviewPage({ rows, L, param, grain, onGrain, trend, onTrend, from, onToggle }: {
   rows: Row[];
   L: Layout;
   param: string;
   grain: Grain;
   onGrain: (g: Grain) => void;
+  trend: Trend;
+  onTrend: (t: Trend) => void;
   from: string;
   onToggle: (dim: string, key: string) => void;
 }) {
   const p = metric(param);
   const f = (v: number) => fmt(p.format, v);
+  const tk = trendKey(param, trend); // chart xu hướng: chỉ số đang chọn hoặc Số booking
+  const tm = metric(tk);
+  const ft = (v: number) => fmt(tm.format, v);
   const dk = isAdditive(param) ? param : CFG.donutMetric; // donut chỉ vẽ chỉ số cộng được
   const dm = metric(dk);
   const total = agg(rows);
@@ -45,11 +50,11 @@ export function OverviewPage({ rows, L, param, grain, onGrain, from, onToggle }:
                         center={[byPrim.length ? pct((byPrim[0].v[dk] ?? 0) / (total[dk] || 1), 0) : '—', byPrim[0]?.k ?? '']} />
           </div>
         </ChartCard>
-        <ChartCard width={L.b} title={`Xu hướng ${p.label}`} sub={`Theo ${lower(GRAIN_VI[grain])} · đưa chuột lên chart để xem chi tiết`}
-                   right={<GrainSeg grain={grain} onGrain={onGrain} />}>
+        <ChartCard width={L.b} title={`Xu hướng ${tm.label}`} sub={`Theo ${lower(GRAIN_VI[grain])} · đưa chuột lên chart để xem chi tiết`}
+                   right={<Controls><TrendSeg param={param} trend={trend} onTrend={onTrend} /><GrainSeg grain={grain} onGrain={onGrain} /></Controls>}>
           <div className="plot">
-            <TrendChart w={L.p2b.w} h={L.p2b.h} labels={periods.map((x) => x.label)} fmt={f}
-                        series={[{ name: p.label, color: 'var(--focus)', area: true, values: periods.map((x) => x.v[param] ?? 0) }]} />
+            <TrendChart w={L.p2b.w} h={L.p2b.h} labels={periods.map((x) => x.label)} fmt={ft}
+                        series={[{ name: tm.label, color: 'var(--focus)', area: true, values: periods.map((x) => x.v[tk] ?? 0) }]} />
           </div>
         </ChartCard>
       </div>

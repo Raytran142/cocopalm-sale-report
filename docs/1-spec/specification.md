@@ -250,3 +250,6 @@ Dashboard theo dõi cho biết *cái gì đang xảy ra*, không cho biết *vì
 - **G32 · Cao** — (2026-10-21, sửa tay) Nhiều property: mỗi tab có đủ bộ cột là một property (tên = tên tab), chọn ở sidebar, tên dashboard "{property} Sale Dashboard", mục tiêu ADR tính lại p75 theo từng property. Chi tiết: `docs/2-design/multi-property.md`.  
   Vì: Số liệu nhiều khách sạn cập nhật vào nhiều tab; người dùng chọn tự nhận tab theo tiêu đề cột và xem từng căn một.  
   Nếu sai: dashboard.json › app.nameTemplate, thresholds[].byProperty
+- **G33 · Vừa** — (2026-10-22, sửa tay) Ba chart xu hướng (Tổng quan, Theo kênh OTA, Theo loại phòng) có nút chuyển giữa chỉ số đang chọn (mặc định Doanh thu booking) và Số booking. Lựa chọn dùng chung cho cả ba trang; top 5 nhóm và màu vẫn xếp theo chỉ số đang chọn.  
+  Vì: Người dùng cần xem số lượt đặt phòng theo thời gian ngay trong cùng khung chart, không thay chỉ số của cả trang.  
+  Nếu sai: app/components/ChartCard.tsx › TrendSeg; app/lib/config.ts › COUNT_METRIC

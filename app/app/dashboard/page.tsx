@@ -19,7 +19,7 @@ import { ALERT_DIM, FILTER_DIM, PRIMARY, SECONDARY, appName, applyTargets, label
 import { alertTotal, alerts as alertsOf, applyDims, applyFilters, defaultFilters, filterCount, prevRows, type Alert } from '@/lib/aggregate';
 import { clockOf, ddmm, isoAt, vi } from '@/lib/format';
 import { SIDE_RAIL, SIDE_WIDE, layout } from '@/lib/tokens';
-import type { DataErr, DataOk, Filters, Grain, Meta, PageId, Row } from '@/lib/types';
+import type { DataErr, DataOk, Filters, Grain, Meta, PageId, Row, Trend } from '@/lib/types';
 
 type Load = 'loading' | 'error' | 'ready';
 
@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [filters, setFilters] = useState<Filters>(() => defaultFilters(0));
   const [page, setPage] = useState<PageId>('home');
   const [grain, setGrain] = useState<Grain>('week');
+  const [trend, setTrend] = useState<Trend>('param'); // chart xu hướng: chỉ số đang chọn hay Số booking — dùng chung 3 trang
   const [rail, setRail] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [drawer, setDrawer] = useState(false);
@@ -178,7 +179,7 @@ export default function DashboardPage() {
       </>
     );
   } else {
-    const common = { rows: filtered, L, param: filters.param, grain, onGrain: setGrain, from, onToggle };
+    const common = { rows: filtered, L, param: filters.param, grain, onGrain: setGrain, trend, onTrend: setTrend, from, onToggle };
     body = (
       <>
         <KpiBand rows={filtered} prev={prev} kpiW={L.kpiW} from={from} />

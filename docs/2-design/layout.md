@@ -64,7 +64,7 @@ Card có legend trừ thêm chiều cao legend trước khi vẽ: donut −44 (l
 | Vị trí | Chart | Vùng vẽ (sidebar mở) | Legend |
 |---|---|---|---|
 | Hàng 2 · 30% | Donut tỷ trọng theo kênh OTA · bấm để lọc | 371 × 186 | 2 hàng |
-| Hàng 2 · 70% | Area xu hướng chỉ số đang chọn · Ngày/Tuần/Tháng | 904 × 230 | không |
+| Hàng 2 · 70% | Area xu hướng chỉ số đang chọn / Số booking · Ngày/Tuần/Tháng | 904 × 230 | không |
 | Hàng 3 · 40% | Bar top 7 loại phòng · bấm để lọc chéo | 504 × 230 | không |
 | Hàng 3 · 60% | Bảng theo kỳ tô nhiệt: Doanh thu booking, Doanh thu phòng, Room night, Số booking, Giá phòng TB / đêm (ADR) | 771 × 230 | không |
 
@@ -73,7 +73,7 @@ Card có legend trừ thêm chiều cao legend trước khi vẽ: donut −44 (l
 | Vị trí | Chart | Vùng vẽ (sidebar mở) | Legend |
 |---|---|---|---|
 | Hàng 2 · 30% | Bar xếp hạng kênh OTA (tối đa 7) | 371 × 230 | không |
-| Hàng 2 · 70% | Line top 5 kênh OTA qua thời gian · Ngày/Tuần/Tháng | 904 × 206 | 1 hàng |
+| Hàng 2 · 70% | Line top 5 kênh OTA qua thời gian · chỉ số đang chọn / Số booking · Ngày/Tuần/Tháng | 904 × 206 | 1 hàng |
 | Hàng 3 · 40% | Donut tỷ trọng doanh thu booking (khi chỉ số đang chọn là tỷ lệ) | 504 × 186 | 2 hàng |
 | Hàng 3 · 60% | Bảng chỉ số đầy đủ: Doanh thu booking, Doanh thu phòng, Room night, Số booking, Giá phòng TB / đêm (ADR) | 771 × 230 | không |
 
@@ -82,7 +82,7 @@ Card có legend trừ thêm chiều cao legend trước khi vẽ: donut −44 (l
 | Vị trí | Chart | Vùng vẽ (sidebar mở) | Legend |
 |---|---|---|---|
 | Hàng 2 · 30% | Bar xếp hạng loại phòng (tối đa 7) | 371 × 230 | không |
-| Hàng 2 · 70% | Line top 5 loại phòng qua thời gian · Ngày/Tuần/Tháng | 904 × 206 | 1 hàng |
+| Hàng 2 · 70% | Line top 5 loại phòng qua thời gian · chỉ số đang chọn / Số booking · Ngày/Tuần/Tháng | 904 × 206 | 1 hàng |
 | Hàng 3 · 40% | Donut tỷ trọng doanh thu booking (khi chỉ số đang chọn là tỷ lệ) | 504 × 186 | 2 hàng |
 | Hàng 3 · 60% | Bảng chỉ số đầy đủ: Doanh thu booking, Doanh thu phòng, Room night, Số booking, Giá phòng TB / đêm (ADR) | 771 × 230 | không |
 

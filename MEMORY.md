@@ -23,3 +23,7 @@
 - Mỗi tab có đủ bộ cột = một property, tên = tên tab (tự nhận, không cấu hình). Xem từng căn, không gộp. Tên dashboard "{property} Sale Dashboard". Mục tiêu ADR tính p75 riêng từng property, chốt tay qua `thresholds[].byProperty`.
 - Tab hiện có: CocoPalm (đổi tên từ Sale2 ngày 2026-10-21), Jade, JM Beach. Tab "tổng quan" không đủ cột nên bị bỏ qua.
 - Chi tiết: `docs/2-design/multi-property.md`.
+
+## 2026-10-22 · Chart xu hướng: Doanh thu / Số booking
+
+- Nút chuyển trong 3 chart xu hướng (Tổng quan, Theo kênh OTA, Theo loại phòng); state dùng chung ở `page.tsx` (`trend`). Chỉ số đếm lấy tự động: metric gốc trên cột có `countDistinct` (`COUNT_METRIC`). Top 5 và màu vẫn theo chỉ số đang chọn.

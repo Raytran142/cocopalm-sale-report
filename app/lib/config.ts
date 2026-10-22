@@ -109,6 +109,10 @@ export function isAdditive(key: string): boolean {
   return c?.role === 'METRIC' && (c.agg ?? 'sum') === 'sum';
 }
 
+/* Chỉ số đếm (Số booking): metric gốc trên cột countDistinct. Chart xu hướng cho chọn giữa chỉ số đang xem và chỉ số này. */
+export const COUNT_METRIC: string | null =
+  CFG.metrics.find((m) => m.col && CFG.columns.some((c) => c.name === m.col && c.countDistinct))?.key ?? null;
+
 /* Tên dashboard theo property đang xem. */
 export const appName = (property?: string | null): string =>
   property && CFG.app.nameTemplate ? CFG.app.nameTemplate.replace('{property}', property) : CFG.app.name;
