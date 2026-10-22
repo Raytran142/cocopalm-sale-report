@@ -78,6 +78,20 @@
       "countDistinct": "unique_id"
     },
     {
+      "name": "booking_cancelled",
+      "label": "Booking huỷ",
+      "type": "number",
+      "role": "METRIC",
+      "format": "int",
+      "countDistinct": "unique_id",
+      "countWhen": {
+        "column": "status",
+        "values": [
+          "cancelled"
+        ]
+      }
+    },
+    {
       "name": "ota_source",
       "label": "Kênh OTA",
       "type": "text",
@@ -111,14 +125,7 @@
       "name": "room_total",
       "label": "Doanh thu phòng",
       "type": "number",
-      "role": "METRIC",
-      "format": "money",
-      "zeroWhen": {
-        "column": "status",
-        "values": [
-          "cancelled"
-        ]
-      }
+      "role": "IGNORE"
     },
     {
       "name": "booking_total",
@@ -194,14 +201,6 @@
       "icon": "coins"
     },
     {
-      "key": "room_total",
-      "label": "Doanh thu phòng",
-      "col": "room_total",
-      "format": "money",
-      "better": "higher",
-      "icon": "trending-up"
-    },
-    {
       "key": "room_night",
       "label": "Room night",
       "col": "room_night",
@@ -218,10 +217,18 @@
       "icon": "circle-check"
     },
     {
+      "key": "booking_cancelled",
+      "label": "Booking huỷ",
+      "col": "booking_cancelled",
+      "format": "int",
+      "better": "lower",
+      "icon": "x"
+    },
+    {
       "key": "adr",
       "label": "Giá phòng TB / đêm (ADR)",
       "num": [
-        "room_total"
+        "booking_total"
       ],
       "den": [
         "room_night"
@@ -233,14 +240,14 @@
   ],
   "kpis": [
     "booking_total",
-    "room_total",
-    "room_night",
     "booking_count",
+    "booking_cancelled",
+    "room_night",
     "adr"
   ],
   "params": [
     "booking_total",
-    "room_total",
+    "booking_count",
     "room_night",
     "adr"
   ],
@@ -248,16 +255,16 @@
   "donutMetric": "booking_total",
   "matrixMetrics": [
     "booking_total",
-    "room_total",
-    "room_night",
     "booking_count",
+    "booking_cancelled",
+    "room_night",
     "adr"
   ],
   "tableMetrics": [
     "booking_total",
-    "room_total",
-    "room_night",
     "booking_count",
+    "booking_cancelled",
+    "room_night",
     "adr"
   ],
   "pages": {

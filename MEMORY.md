@@ -16,7 +16,7 @@
 - "Số booking" = số `unique_id` khác nhau, qua cột suy ra `booking_count` (`countDistinct: "unique_id"` trong dashboard.json; tính ở `app/lib/data-source.ts`). `room_amount` chuyển IGNORE.
 - Tài liệu skill sinh (spec/design/layout/components) đã sửa tay vì script render của skill không còn trên máy; ghi là G29.
 - `booking_total` lặp nguyên giá trị trên mọi dòng của booking nhiều phòng (222 booking) ⇒ đã sửa: chỉ giữ ở dòng đầu (`onePerEntity: "unique_id"`), tổng 7,72 tỷ → 5,60 tỷ (G30).
-- Booking huỷ giữ room_total (556 tr) và room night dù booking_total = 0 ⇒ đã sửa: `zeroWhen: status = cancelled` cho room_total, room_night (G31). Số booking vẫn đếm cả booking huỷ.
+- Booking huỷ giữ room_total (556 tr) và room night dù booking_total = 0 ⇒ đã sửa: `zeroWhen: status = cancelled` cho room_total, room_night (G31). Số booking vẫn đếm cả booking huỷ. (2026-10-22: room_total bỏ hẳn, xem dưới.)
 
 ## 2026-10-21 · Nhiều property
 
@@ -27,3 +27,9 @@
 ## 2026-10-22 · Chart xu hướng: Doanh thu / Số booking
 
 - Nút chuyển trong 3 chart xu hướng (Tổng quan, Theo kênh OTA, Theo loại phòng); state dùng chung ở `page.tsx` (`trend`). Chỉ số đếm lấy tự động: metric gốc trên cột có `countDistinct` (`COUNT_METRIC`). Top 5 và màu vẫn theo chỉ số đang chọn.
+
+## 2026-10-22 · Bỏ room_total, thêm Booking huỷ
+
+- `room_total` IGNORE; không còn "Doanh thu phòng". ADR = booking_total / room_night; mục tiêu ADR p75 tính theo từng booking (server gộp dòng theo unique_id, mã không gửi xuống trình duyệt).
+- "Booking huỷ" = countDistinct unique_id + `countWhen: status = cancelled`; KPI 5 ô: Doanh thu booking · Số booking · Booking huỷ · Room night · ADR. Jade, JM Beach chưa có dòng cancelled.
+- Tab Theo loại phòng: donut tỷ trọng có nút Doanh thu / Số booking riêng (`shareMode`).

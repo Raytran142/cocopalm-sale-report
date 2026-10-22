@@ -97,11 +97,16 @@ async function readSheet(tab: string): Promise<unknown[][]> {
   return j.values ?? [];
 }
 
+/* Mã thực thể (booking) của mỗi dòng: cột nguồn của cột đếm đầu tiên (unique_id). Chỉ dùng ở server để tính
+   ngưỡng theo từng booking; xoá khỏi dòng trước khi trả về trình duyệt. */
+const ENTITY_COL = COLUMNS.find((c) => c.countDistinct)?.countDistinct ?? null;
+
 /* Cột mà một tab phải có (kể cả cột nguồn của cột suy ra). */
 const REQUIRED = [...new Set(COLUMNS.flatMap((c) => [
   c.countDistinct ?? c.name,
   ...(c.onePerEntity ? [c.onePerEntity] : []),
   ...(c.zeroWhen ? [c.zeroWhen.column] : []),
+  ...(c.countWhen ? [c.countWhen.column] : []),
 ]))];
 
 /* Property = mọi tab có hàng tiêu đề chứa đủ REQUIRED; tên property = tên tab.
@@ -215,8 +220,9 @@ export function toRows(values: unknown[][]): { rows: Row[]; skipped: number; bad
         const k = String(at(raw, c.countDistinct) ?? '').trim();
         let s = seen.get(c.name);
         if (!s) seen.set(c.name, (s = new Set()));
-        m[c.name] = k && !s.has(k) ? 1 : 0;
-        if (k) s.add(k);
+        const ok = !c.countWhen || c.countWhen.values.includes(String(at(raw, c.countWhen.column) ?? '').trim());
+        m[c.name] = ok && k && !s.has(k) ? 1 : 0;
+        if (k && ok) s.add(k);
       } else if (c.type === 'text') d[c.name] = String(at(raw, c.name) ?? '').trim();
       else if (c.type === 'number') {
         const n = toNum(at(raw, c.name));
@@ -232,7 +238,7 @@ export function toRows(values: unknown[][]): { rows: Row[]; skipped: number; bad
         }
       }
     }
-    rows.push({ t: 0, date, d, m });
+    rows.push({ t: 0, date, d, m, ...(ENTITY_COL ? { e: String(at(raw, ENTITY_COL) ?? '').trim() } : {}) });
   }
   if (rows.length) {
     let min = rows[0].date;
@@ -264,12 +270,14 @@ export async function loadData(property?: string | null): Promise<{ rows: Row[];
   const { rows, skipped, badDates, badNumbers, header } = toRows(values);
   if (!rows.length) throw new SourceError(`Tab "${tab}" không có dòng dữ liệu nào.`, 'Kiểm tra tab có dữ liệu bên dưới hàng tiêu đề, và cột ngày đúng định dạng yyyy-mm-dd.');
   const last = rows[rows.length - 1];
+  const targets = thresholdTargets(rows, tab);
+  for (const r of rows) delete r.e;
   return {
     rows,
     meta: {
       property: tab,
       properties,
-      targets: thresholdTargets(rows, tab),
+      targets,
       source: CFG.source.type,
       sheet: tab,
       title: CFG.source.title ?? '',

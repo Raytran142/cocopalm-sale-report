@@ -17,7 +17,8 @@ export function PeriodTable({ periods, total, keys }: { periods: Period[]; total
     const [mn, mx] = range[k];
     if (mx === mn) return undefined;
     const p = (5 + ((v - mn) / (mx - mn)) * 24).toFixed(0);
-    const ink = thresholdsOf(k).some((t) => t.kind === 'unit_cost') ? '--bad' : '--focus';
+    // chỉ số nghịch (chi phí đơn vị, Booking huỷ…) pha --bad: ô càng đậm càng xấu
+    const ink = thresholdsOf(k).some((t) => t.kind === 'unit_cost') || metric(k).better === 'lower' ? '--bad' : '--focus';
     return { background: `color-mix(in srgb, var(${ink}) ${p}%, transparent)` };
   };
   return (

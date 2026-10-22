@@ -85,7 +85,7 @@ Thứ tự quyết định màu một chuỗi, đọc từ trên xuống, gặp 
 | | Chỉ số |
 |---|---|
 | KPI tô xanh/đỏ (có ngưỡng) | Giá phòng TB / đêm (ADR) |
-| KPI giữ mực (không có ngưỡng) | Doanh thu booking · Doanh thu phòng · Room night · Số booking |
+| KPI giữ mực (không có ngưỡng) | Doanh thu booking · Số booking · Booking huỷ · Room night |
 | Ô nhiệt pha `--bad` (chi phí đơn vị, càng đậm càng xấu) | không có |
 
 ## 6 · Nguyên tắc tương tác

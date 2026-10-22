@@ -6,6 +6,7 @@ export type Row = {
   date: string;
   d: Record<string, string>;
   m: Record<string, number>;
+  e?: string; // mã booking — chỉ có ở server khi tính ngưỡng, không gửi xuống trình duyệt
 };
 
 export type Meta = {

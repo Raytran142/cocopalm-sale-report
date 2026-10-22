@@ -168,7 +168,7 @@ export const alertTotal = (as: Alert[]): number => as.reduce((s, a) => s + a.key
 
 /* ── Ngưỡng tính riêng cho từng property ───────────────────────────────────
    Ngưỡng có rule p75 / p25 / median_x1.25 được tính lại trên dữ liệu của property đang xem (giá trị chỉ số
-   theo từng dòng, bỏ dòng có mẫu số 0), làm tròn 2 chữ số có nghĩa theo hướng có lợi cho mục tiêu
+   theo từng booking — hoặc từng dòng khi không có mã booking —, bỏ đơn vị có mẫu số 0), làm tròn 2 chữ số có nghĩa theo hướng có lợi cho mục tiêu
    (lên với p75 / median_x1.25, xuống với p25) — cùng luật dashboard-design dùng khi soạn thiết kế.
    byProperty[property] (con số người dùng chốt) thắng mọi tính toán. */
 function quantile(sorted: number[], q: number): number {
@@ -184,15 +184,25 @@ function round2(v: number, dir: 'up' | 'down'): number {
 
 export function thresholdTargets(rows: Row[], property: string): Record<string, number> {
   const out: Record<string, number> = {};
+  // Đơn vị tính phân vị: mỗi booking (gộp các dòng phòng cùng mã r.e), không có mã thì mỗi dòng.
+  // Gộp theo booking để ADR = booking_total / tổng room night của cả booking, không lệch ở booking nhiều phòng.
+  const byE = new Map<string, Row[]>();
+  rows.forEach((r, i) => {
+    const k = r.e || `#${i}`;
+    let a = byE.get(k);
+    if (!a) byE.set(k, (a = []));
+    a.push(r);
+  });
+  const units = [...byE.values()].map((rs) => ({ s: colTotals(rs) }));
   for (const t of CFG.thresholds) {
     const fixed = t.byProperty?.[property];
     if (fixed !== undefined) { out[t.key] = fixed; continue; }
     if (t.rule !== 'p75' && t.rule !== 'p25' && t.rule !== 'median_x1.25') continue;
     const m = METRICS[t.metric];
     const ratio = !!m?.den?.length;
-    const vals = rows
-      .filter((r) => !ratio || m.den!.reduce((s, c) => s + (r.m[c.replace(/^-/, '')] ?? 0), 0) !== 0)
-      .map((r) => agg([r])[t.metric] ?? 0)
+    const vals = units
+      .filter((u) => !ratio || m.den!.reduce((s, c) => s + (u.s[c.replace(/^-/, '')] ?? 0), 0) !== 0)
+      .map((u) => withMetrics(u.s)[t.metric] ?? 0)
       .filter(Number.isFinite)
       .sort((a, b) => a - b);
     if (!vals.length) continue;

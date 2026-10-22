@@ -79,6 +79,20 @@
       "countDistinct": "unique_id"
     },
     {
+      "name": "booking_cancelled",
+      "label": "Booking huỷ",
+      "type": "number",
+      "role": "METRIC",
+      "format": "int",
+      "countDistinct": "unique_id",
+      "countWhen": {
+        "column": "status",
+        "values": [
+          "cancelled"
+        ]
+      }
+    },
+    {
       "name": "ota_source",
       "label": "Kênh OTA",
       "type": "text",
@@ -112,14 +126,7 @@
       "name": "room_total",
       "label": "Doanh thu phòng",
       "type": "number",
-      "role": "METRIC",
-      "format": "money",
-      "zeroWhen": {
-        "column": "status",
-        "values": [
-          "cancelled"
-        ]
-      }
+      "role": "IGNORE"
     },
     {
       "name": "booking_total",
@@ -195,14 +202,6 @@
       "icon": "coins"
     },
     {
-      "key": "room_total",
-      "label": "Doanh thu phòng",
-      "col": "room_total",
-      "format": "money",
-      "better": "higher",
-      "icon": "trending-up"
-    },
-    {
       "key": "room_night",
       "label": "Room night",
       "col": "room_night",
@@ -219,10 +218,18 @@
       "icon": "circle-check"
     },
     {
+      "key": "booking_cancelled",
+      "label": "Booking huỷ",
+      "col": "booking_cancelled",
+      "format": "int",
+      "better": "lower",
+      "icon": "x"
+    },
+    {
       "key": "adr",
       "label": "Giá phòng TB / đêm (ADR)",
       "num": [
-        "room_total"
+        "booking_total"
       ],
       "den": [
         "room_night"
@@ -234,14 +241,14 @@
   ],
   "kpis": [
     "booking_total",
-    "room_total",
-    "room_night",
     "booking_count",
+    "booking_cancelled",
+    "room_night",
     "adr"
   ],
   "params": [
     "booking_total",
-    "room_total",
+    "booking_count",
     "room_night",
     "adr"
   ],
@@ -249,16 +256,16 @@
   "donutMetric": "booking_total",
   "matrixMetrics": [
     "booking_total",
-    "room_total",
-    "room_night",
     "booking_count",
+    "booking_cancelled",
+    "room_night",
     "adr"
   ],
   "tableMetrics": [
     "booking_total",
-    "room_total",
-    "room_night",
     "booking_count",
+    "booking_cancelled",
+    "room_night",
     "adr"
   ],
   "pages": {
@@ -312,7 +319,7 @@
     "notes": [
       "Ngày trên dashboard là ngày đặt (created_date), không phải ngày check-in.",
       "Tổng mặc định gồm cả booking trạng thái cancelled và modified; dùng bộ lọc Trạng thái để chỉ xem booking new.",
-      "Mỗi dòng của sheet là một phòng của booking; booking nhiều phòng có nhiều dòng cùng unique_id. Doanh thu booking chỉ tính một lần cho mỗi booking; Số booking đếm unique_id. Booking huỷ (status = cancelled) không tính vào Doanh thu booking, Doanh thu phòng, Room night và ADR; Số booking vẫn đếm cả booking huỷ (lọc Trạng thái để bỏ)."
+      "Mỗi dòng của sheet là một phòng của booking; booking nhiều phòng có nhiều dòng cùng unique_id. Doanh thu booking chỉ tính một lần cho mỗi booking; Số booking đếm unique_id. Booking huỷ (status = cancelled) không tính vào Doanh thu booking, Room night và ADR; Số booking vẫn đếm cả booking huỷ (lọc Trạng thái để bỏ); chỉ số Booking huỷ đếm riêng số booking đã huỷ theo ngày đặt. Cột room_total của sheet không dùng."
     ],
     "later": [
       "Đăng nhập bằng Google và giới hạn người được xem.",
@@ -372,16 +379,16 @@
     {
       "level": "Cao",
       "doc": "spec",
-      "decision": "room_total và room_night tính là 0 ở booking status = cancelled (zeroWhen); Doanh thu phòng, Room night và ADR không còn gồm booking huỷ.",
-      "why": "Booking huỷ có booking_total = 0 nhưng vẫn giữ room_total (147 booking, 556 tr) và room_night; giữ lại làm Doanh thu phòng cao hơn Doanh thu booking và làm lệch ADR.",
-      "fix": "dashboard.json › columns[room_total|room_night].zeroWhen"
+      "decision": "Nhiều property: mỗi tab có đủ bộ cột là một property, tên property = tên tab; nút chọn property ở sidebar; tên dashboard = \"{property} Sale Dashboard\"; ngưỡng ADR tính lại (p75) theo từng property.",
+      "why": "Yêu cầu 2026-10-21: số liệu nhiều khách sạn (CocoPalm, Jade, JM Beach, Aqua Vista…) cập nhật vào nhiều tab; người dùng chọn tự nhận tab theo tiêu đề cột, xem từng căn một (không gộp).",
+      "fix": "dashboard.json › app.nameTemplate, thresholds[].byProperty; app/lib/data-source.ts › listProperties"
     },
     {
       "level": "Cao",
       "doc": "spec",
-      "decision": "Nhiều property: mỗi tab có đủ bộ cột là một property, tên property = tên tab; nút chọn property ở sidebar; tên dashboard = \"{property} Sale Dashboard\"; ngưỡng ADR tính lại (p75) theo từng property.",
-      "why": "Yêu cầu 2026-10-21: số liệu nhiều khách sạn (CocoPalm, Jade, JM Beach, Aqua Vista…) cập nhật vào nhiều tab; người dùng chọn tự nhận tab theo tiêu đề cột, xem từng căn một (không gộp).",
-      "fix": "dashboard.json › app.nameTemplate, thresholds[].byProperty; app/lib/data-source.ts › listProperties"
+      "decision": "Bỏ hẳn room_total (IGNORE): xoá KPI/chỉ số Doanh thu phòng; ADR = SUM(booking_total) / SUM(room_night). Thêm chỉ số Booking huỷ (đếm unique_id có status = cancelled) vào KPI, bảng hiệu quả theo kỳ và bảng chỉ số đầy đủ.",
+      "why": "Yêu cầu 2026-10-22: Doanh thu booking và Doanh thu phòng dễ nhầm; chỉ theo dõi booking_total. Cần theo dõi số booking huỷ theo kỳ.",
+      "fix": "dashboard.json › columns[room_total|booking_cancelled], metrics, kpis, params, matrixMetrics, tableMetrics"
     }
   ],
   "reference": {
@@ -400,17 +407,17 @@
     },
     "kpisDefault": {
       "booking_total": 429673227,
-      "room_total": 429673227,
-      "room_night": 485,
       "booking_count": 122,
+      "booking_cancelled": 0,
+      "room_night": 485,
       "adr": 885924.1793814433
     },
     "kpisAll": {
       "booking_total": 5538687278,
-      "room_total": 5614373598,
-      "room_night": 6633,
       "booking_count": 1939,
-      "adr": 846430.513794663
+      "booking_cancelled": 147,
+      "room_night": 6633,
+      "adr": 835019.9424091663
     }
   },
   "_render": {

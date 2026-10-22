@@ -26,6 +26,9 @@ export type Column = {
   /* Cột số tính là 0 ở dòng mà cột `column` có một trong các giá trị `values`
      (vd. room_total, room_night của booking đã huỷ). */
   zeroWhen?: { column: string; values: string[] };
+  /* Đi kèm countDistinct: chỉ đếm giá trị ở dòng mà cột `column` có một trong các giá trị `values`
+     (vd. Booking huỷ = số unique_id có status = cancelled). */
+  countWhen?: { column: string; values: string[] };
 };
 
 export type Metric = {
@@ -111,7 +114,7 @@ export function isAdditive(key: string): boolean {
 
 /* Chỉ số đếm (Số booking): metric gốc trên cột countDistinct. Chart xu hướng cho chọn giữa chỉ số đang xem và chỉ số này. */
 export const COUNT_METRIC: string | null =
-  CFG.metrics.find((m) => m.col && CFG.columns.some((c) => c.name === m.col && c.countDistinct))?.key ?? null;
+  CFG.metrics.find((m) => m.col && CFG.columns.some((c) => c.name === m.col && c.countDistinct && !c.countWhen))?.key ?? null;
 
 /* Tên dashboard theo property đang xem. */
 export const appName = (property?: string | null): string =>

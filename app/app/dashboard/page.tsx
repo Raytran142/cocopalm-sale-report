@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [page, setPage] = useState<PageId>('home');
   const [grain, setGrain] = useState<Grain>('week');
   const [trend, setTrend] = useState<Trend>('param'); // chart xu hướng: chỉ số đang chọn hay Số booking — dùng chung 3 trang
+  const [shareMode, setShareMode] = useState<Trend>('param'); // donut tỷ trọng ở tab Theo loại phòng: chỉ số đang chọn hay Số booking
   const [rail, setRail] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [drawer, setDrawer] = useState(false);
@@ -185,7 +186,7 @@ export default function DashboardPage() {
         <KpiBand rows={filtered} prev={prev} kpiW={L.kpiW} from={from} />
         {page === 'home' && <OverviewPage {...common} />}
         {page === 'primary' && <DimPage {...common} dim={PRIMARY} />}
-        {page === 'secondary' && <DimPage {...common} dim={SECONDARY} />}
+        {page === 'secondary' && <DimPage {...common} dim={SECONDARY} shareMode={shareMode} onShareMode={setShareMode} />}
       </>
     );
   }

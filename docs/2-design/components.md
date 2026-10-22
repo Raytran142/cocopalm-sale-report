@@ -21,10 +21,10 @@ Băng 118px, 5 thẻ. Mỗi thẻ: nhãn + icon · số lớn · so kỳ trướ
 | # | Thẻ | Số lớn | Chân thẻ | Màu |
 |---|---|---|---|---|
 | 1 | Doanh thu booking | `SUM(booking_total)`, mỗi `unique_id` một lần | so với … kỳ trước | giữ mực |
-| 2 | Doanh thu phòng | `SUM(room_total)`, bỏ booking huỷ | so với … kỳ trước | giữ mực |
-| 3 | Room night | `SUM(room_night)`, bỏ booking huỷ | so với … kỳ trước | giữ mực |
-| 4 | Số booking | `COUNT DISTINCT(unique_id)` | so với … kỳ trước | giữ mực |
-| 5 | Giá phòng TB / đêm (ADR) | `SUM(room_total) / SUM(room_night)` | mục tiêu 970k · đang thiếu … | xanh khi ≥ 970k, còn lại đỏ |
+| 2 | Số booking | `COUNT DISTINCT(unique_id)` | so với … kỳ trước | giữ mực |
+| 3 | Booking huỷ | `COUNT DISTINCT(unique_id)` có `status = cancelled` | so với … kỳ trước (tăng là xấu) | giữ mực |
+| 4 | Room night | `SUM(room_night)`, bỏ booking huỷ | so với … kỳ trước | giữ mực |
+| 5 | Giá phòng TB / đêm (ADR) | `SUM(booking_total) / SUM(room_night)` | mục tiêu 970k · đang thiếu … | xanh khi ≥ 970k, còn lại đỏ |
 
 So kỳ trước = cùng số ngày, ngay trước khoảng đang xem, cùng bộ lọc. Chênh dưới 0,2% hiện trung tính.
 
@@ -35,9 +35,10 @@ So kỳ trước = cùng số ngày, ngay trước khoảng đang xem, cùng b�
 | Donut tỷ trọng | 2 hàng (44px) | trang 1, 2, 3 — chỉ vẽ chỉ số cộng được; chỉ số đang chọn là tỷ lệ thì vẽ Doanh thu booking |
 | Area một chuỗi | không | trang 1, xu hướng chỉ số đang chọn hoặc Số booking (nút chuyển ở đầu card) |
 | Line nhiều đường | 1 hàng (24px) | trang 2, 3 — top 5 nhóm (xếp theo chỉ số đang chọn), vẽ chỉ số đang chọn hoặc Số booking |
+| Donut tỷ trọng (trang 3) | 2 hàng (44px) | trang Theo loại phòng có nút chuyển "chỉ số đang chọn / Số booking" riêng của card (không dùng chung với chart xu hướng); tên trong chú thích cắt ở 22 ký tự |
 | Bar xếp hạng | không | trang 1 (top loại phòng), trang 2, 3 — tối đa 7 thanh |
-| Bảng theo kỳ tô nhiệt | không | trang 1 — cột: Doanh thu booking, Doanh thu phòng, Room night, Số booking, Giá phòng TB / đêm (ADR) |
-| Bảng chỉ số đầy đủ | không | trang 2, 3 — cột: Doanh thu booking, Doanh thu phòng, Room night, Số booking, Giá phòng TB / đêm (ADR) |
+| Bảng theo kỳ tô nhiệt | không | trang 1 — cột: Doanh thu booking, Số booking, Booking huỷ, Room night, Giá phòng TB / đêm (ADR); Booking huỷ pha đỏ (càng đậm càng xấu) |
+| Bảng chỉ số đầy đủ | không | trang 2, 3 — cột: Doanh thu booking, Số booking, Booking huỷ, Room night, Giá phòng TB / đêm (ADR) |
 | Sparkline | không | trong thẻ KPI |
 
 Legend nằm trên chart, căn trái, chỉ có màu ↔ tên nhóm. Bấm lát donut hoặc thanh bar = lọc theo nhóm đó (bấm lại để bỏ).
@@ -61,7 +62,7 @@ Legend nằm trên chart, căn trái, chỉ có màu ↔ tên nhóm. Bấm lát 
 
 ## 5 · Drawer bộ lọc
 
-Chứa: 4 lựa chọn chỉ số (Doanh thu booking · Doanh thu phòng · Room night · Giá phòng TB / đêm (ADR), mặc định **Doanh thu booking**) · khoảng thời gian (7 ngày · 30 ngày · 3 tháng · toàn bộ · tuỳ chọn) · kênh OTA (checkbox, kèm số dòng) · trạng thái (danh sách thả) · loại phòng (danh sách cuộn) · `Xoá hết` · `Áp dụng`.
+Chứa: 4 lựa chọn chỉ số (Doanh thu booking · Số booking · Room night · Giá phòng TB / đêm (ADR), mặc định **Doanh thu booking**) · khoảng thời gian (7 ngày · 30 ngày · 3 tháng · toàn bộ · tuỳ chọn) · kênh OTA (checkbox, kèm số dòng) · trạng thái (danh sách thả) · loại phòng (danh sách cuộn) · `Xoá hết` · `Áp dụng`.
 
 Mọi thay đổi trong drawer là nháp, chỉ áp dụng khi bấm `Áp dụng`. Mặc định mở ra là 30 ngày cuối **của dữ liệu**, không tính từ hôm nay.
 
@@ -89,7 +90,7 @@ Chưa có ngưỡng nào sinh cảnh báo.
 
 ## 9 · Icon
 
-33 icon Lucide nhúng sẵn trong `lib/icons.ts`, không cài gì thêm, không vẽ path theo trí nhớ, không emoji. Icon riêng của dashboard này: KPI Doanh thu booking → `coins` · KPI Doanh thu phòng → `trending-up` · KPI Room night → `clock` · KPI Số booking → `circle-check` · KPI Giá phòng TB / đêm (ADR) → `gauge` · trang kênh OTA → `chart-pie` · trang loại phòng → `layout-dashboard`.
+33 icon Lucide nhúng sẵn trong `lib/icons.ts`, không cài gì thêm, không vẽ path theo trí nhớ, không emoji. Icon riêng của dashboard này: KPI Doanh thu booking → `coins` · KPI Số booking → `circle-check` · KPI Booking huỷ → `x` · KPI Room night → `clock` · KPI Giá phòng TB / đêm (ADR) → `gauge` · trang kênh OTA → `chart-pie` · trang loại phòng → `layout-dashboard`.
 
 ## Giả định cần bạn xác nhận
 

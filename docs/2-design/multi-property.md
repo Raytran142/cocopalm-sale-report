@@ -17,11 +17,11 @@ Mỗi khách sạn (CocoPalm, Jade, JM Beach, Aqua Vista…) cập nhật số l
 | Property mặc định | Property đã xem lần trước (nhớ trong trình duyệt); không có thì `source.sheet` nếu còn là property, không thì tab đầu tiên |
 | Xem gộp | Không có. Mỗi lần xem một property |
 | Tên dashboard | `app.nameTemplate` = `"{property} Sale Dashboard"`, hiện ở sidebar và tiêu đề tab trình duyệt. Trang đăng nhập dùng `app.name` = "Sale Dashboard" |
-| Mục tiêu ADR | Tính lại cho **từng property**: phân vị 75 của ADR theo từng dòng (bỏ dòng có room night = 0), làm tròn lên 2 chữ số có nghĩa. Muốn chốt số riêng: `thresholds[adr_target].byProperty: { "Jade": 1200000 }` — con số chốt thắng con số tự tính |
+| Mục tiêu ADR | Tính lại cho **từng property**: phân vị 75 của ADR theo từng booking (gộp các dòng phòng cùng unique_id, bỏ booking có room night = 0), làm tròn lên 2 chữ số có nghĩa. Muốn chốt số riêng: `thresholds[adr_target].byProperty: { "Jade": 1200000 }` — con số chốt thắng con số tự tính |
 | Đổi property | Tải dữ liệu mới, đặt lại bộ lọc (khoảng ngày, kênh, loại phòng, trạng thái) và tháng đang chọn ở trang "Theo thời gian", vì nhóm và khoảng ngày của mỗi property khác nhau |
 | Xuất CSV | Tên file theo property: `jm-beach-sale-dashboard_<từ>_<đến>.csv` |
 
-Giá trị tự tính tại thời điểm viết (2026-10-21): CocoPalm 990.000 · Jade 940.000 · JM Beach 1.100.000.
+Giá trị tự tính (2026-10-22, ADR = booking_total / room_night): CocoPalm 970.000 · Jade 930.000 · JM Beach 1.100.000.
 
 ## 3. Giao diện
 

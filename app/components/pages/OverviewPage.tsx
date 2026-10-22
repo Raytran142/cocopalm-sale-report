@@ -38,7 +38,7 @@ export function OverviewPage({ rows, L, param, grain, onGrain, trend, onTrend, f
     k: g.k, v: Math.max(0, g.v[dk] ?? 0), lab: fmt(dm.format, g.v[dk] ?? 0), color: seriesColor(g.v, i),
     onClick: () => onToggle(PRIMARY, g.k),
   }));
-  const bad = CFG.matrixMetrics.filter((k) => thresholdsOf(k).some((t) => t.kind === 'unit_cost')).map((k) => metric(k).label);
+  const bad = CFG.matrixMetrics.filter((k) => thresholdsOf(k).some((t) => t.kind === 'unit_cost') || metric(k).better === 'lower').map((k) => metric(k).label);
 
   return (
     <>

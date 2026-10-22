@@ -12,7 +12,7 @@ import { DimTable } from '../charts/Tables';
 import { TrendChart } from '../charts/TrendChart';
 import { short } from './OverviewPage';
 
-export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, from, onToggle }: {
+export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, shareMode, onShareMode, from, onToggle }: {
   rows: Row[];
   L: Layout;
   dim: string;
@@ -21,6 +21,9 @@ export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, f
   onGrain: (g: Grain) => void;
   trend: Trend;
   onTrend: (t: Trend) => void;
+  /** Có thì card tỷ trọng có nút chuyển chỉ số / Số booking (tab Theo loại phòng). */
+  shareMode?: Trend;
+  onShareMode?: (t: Trend) => void;
   from: string;
   onToggle: (dim: string, key: string) => void;
 }) {
@@ -35,9 +38,10 @@ export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, f
   const rank = new Map(G.map((g, i) => [g.k, i]));
   const colorOf = (g: Group) => seriesColor(g.v, rank.get(g.k) ?? 0);
   const top = G.slice(0, 5); // 5 đường là trần đọc được của line chart
-  const dk = isAdditive(param) ? param : CFG.donutMetric;
+  const base = isAdditive(param) ? param : CFG.donutMetric; // donut chỉ vẽ chỉ số cộng được
+  const dk = shareMode ? trendKey(base, shareMode) : base;
   const dm = metric(dk);
-  const share = sortBy([...G], dk).slice(0, 6);
+  const slices = sortBy([...G], dk).slice(0, 6);
   const periods = byGrain(rows, grain, from);
   const lines = top.map((g) => {
     const m = new Map(byGrain(rows.filter((r) => r.d[dim] === g.k), grain, from).map((x) => [x.k, x.v[tk] ?? 0]));
@@ -66,14 +70,15 @@ export function DimPage({ rows, L, dim, param, grain, onGrain, trend, onTrend, f
       </div>
       <div id="row3">
         <ChartCard width={L.c} title={`Tỷ trọng ${dm.label}`} sub={`Trên tổng ${fmt(dm.format, total[dk] ?? 0)}`}
-                   legend={<Legend two items={share.map((g) => ({ name: g.k, color: colorOf(g) }))} />}>
+                   right={shareMode && onShareMode ? <TrendSeg param={base} trend={shareMode} onTrend={onShareMode} /> : undefined}
+                   legend={<Legend two items={slices.map((g) => ({ name: short(g.k, 22), color: colorOf(g) }))} />}>
           <div className="plot">
             <DonutChart w={L.p3c.w} h={L.p3c.h - LGD2}
-                        items={share.map((g) => ({
+                        items={slices.map((g) => ({
                           k: g.k, v: Math.max(0, g.v[dk] ?? 0), lab: fmt(dm.format, g.v[dk] ?? 0), color: colorOf(g),
                           onClick: () => onToggle(dim, g.k),
                         }))}
-                        center={[share.length ? pct((share[0].v[dk] ?? 0) / (total[dk] || 1), 0) : '—', share[0] ? short(share[0].k, 18) : '']} />
+                        center={[slices.length ? pct((slices[0].v[dk] ?? 0) / (total[dk] || 1), 0) : '—', slices[0] ? short(slices[0].k, 18) : '']} />
           </div>
         </ChartCard>
         <ChartCard width={L.d} title="Bảng chỉ số đầy đủ" sub={`Sắp theo ${p.label}`}>
